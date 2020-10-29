@@ -1,0 +1,1 @@
+docker build -t ncc:v2 .
