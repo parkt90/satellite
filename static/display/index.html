@@ -1,0 +1,339 @@
+﻿<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>卫星接入认证监视系统后台</title>
+    <!-- <link rel="stylesheet" href="static/static/bootstrap.min.css"> -->
+    <script src="static/static/jquery.min.js"></script>
+    <script src="static/static/bootstrap.min.js"></script>
+    <script type="text/javascript" src="static/static/socket.io.min.js"></script>
+    <link rel="stylesheet" href="static/display/css/comon0.css">
+     <link rel="stylesheet" href="static/static/bootstrap.min.css">
+    <style>
+        #log {
+            background-color: inherit;
+            width: 100%;
+            height: 347px;
+            font-size: 0.17rem;
+        }
+
+        #table {
+            font-size: 0.17rem;
+        }
+
+        /* 禁止拖动 */
+        textarea {
+            resize: none;
+            outline: none !important;
+            border: 1px solid #31708f;
+            box-shadow: 0 0 10px #719ECE;
+        }
+    </style>
+</head>
+<script>
+    $(window).load(function () {
+        $(".loading").fadeOut()
+    })
+
+
+    $(document).ready(function () {
+        var whei = $(window).width()
+        $("html").css({ fontSize: whei / 20 })
+        $(window).resize(function () {
+            var whei = $(window).width()
+            $("html").css({ fontSize: whei / 20 })
+        });
+    });
+</script>
+<!-- <script type="text/javascript">
+    $(document).ready(function () {
+        var html = $(".wrap ul").html()
+        $(".wrap ul").append(html)
+        var ls = $(".wrap li").length / 2 + 1
+        i = 0
+        ref = setInterval(function () {
+            i++
+            if (i == ls) {
+                i = 1
+                $(".wrap ul").css({ marginTop: 0 })
+                $(".wrap ul").animate({ marginTop: -'.52' * i + 'rem' }, 1000)
+            }
+            $(".wrap ul").animate({ marginTop: -'.52' * i + 'rem' }, 1000)
+
+
+        }, 2400);
+
+
+
+        var html2 = $(".adduser ul").html()
+        $(".adduser ul").append(html2)
+        var ls2 = $(".adduser li").length / 2 + 1
+        a = 0
+        ref = setInterval(function () {
+            a++
+            if (a == ls2) {
+                a = 1
+                $(".adduser ul").css({ marginTop: 0 })
+                $(".adduser ul").animate({ marginTop: -'.5' * a + 'rem' }, 800)
+            }
+            $(".adduser ul").animate({ marginTop: -'.5' * a + 'rem' }, 800)
+
+
+        }, 4300);
+
+    })
+</script> -->
+<!-- <script type="text/javascript" src="js/echarts.min.js"></script> -->
+<!-- <script language="JavaScript" src="js/js.js"></script> -->
+
+<body>
+    <div class="canvas" style="opacity: .2">
+        <iframe frameborder="0" src="static/display/js/index.html" style="width: 100%; height: 100%"></iframe>
+    </div>
+    <div class="loading">
+        <div class="loadbox"> <img src="static/display/images/loading.gif"> 页面加载中... </div>
+    </div>
+    <div class="head">
+        <h1>卫星接入认证监视系统</h1>
+        <div class="weather">
+            <span id="showTime"></span></div>
+        <script>
+            var t = null;
+            t = setTimeout(pushTime, 1000);
+            function pushTime() {
+                clearTimeout(t);
+                dt = new Date();
+                var y = dt.getFullYear();
+                var mt = dt.getMonth() + 1;
+                var day = dt.getDate();
+                var h = dt.getHours();
+                var m = dt.getMinutes();
+                var s = dt.getSeconds();
+                document.getElementById("showTime").innerHTML = y + "年" + mt + "月" + day + "日" + "-" + h + "时" + m + "分" + s + "秒";
+                t = setTimeout(pushTime, 1000);
+            }
+
+        </script>
+
+    </div>
+    <div class="mainbox">
+        <ul class="clearfix">
+            <li>
+                <div class="boxall" style="height: 4.3rem">
+                    <div class="alltitle">用户消息</div>
+                    <div>
+                        <h2>
+                            <h2><br>
+                                <form>
+                                    <p5 id="simple1"> 暂无消息 </p5><br><br>
+                                    <p5 id="simpleResult1"> </p5>
+                                </form>
+                    </div>
+                    <div class="boxfoot"></div>
+                </div>
+                <div class="boxall" style="height: 4.3rem">
+                    <div class="alltitle">NCC消息</div>
+                    <!-- <div class="barbox2">
+                        <ul class="clearfix">
+                            <li class="pulll" id="simple1"> 显示NCC消息 </li>
+                            <li class="pulll" id="simple1"> 显示NCC消息 </li>
+                            <li class="pulll" id="simple1"> 显示NCC消息 </li>
+                            <li class="pulll" id="simple1"> 显示NCC消息 </li>
+                        </ul>
+                    </div> -->
+                    <div>
+                        <h2>
+                            <h2><br>
+                                <form>
+                                    <p5 id="simple2"> 暂无消息 </p5><br><br>
+                                    <p5 id="simpleResult2"> </p5>
+                                </form>
+                    </div>
+                    <div class="boxfoot"></div>
+                </div>
+            </li>
+            <li>
+                <div class="bar">
+                    <div class="barbox">
+                        <ul class="clearfix">
+                            <li class="pulll_left counter" id="userCount">0</li>
+                            <li class="pulll_left counter" id="succ_ratio">100%</li>
+                            <li class="pulll_left counter" id="storage">0.00 Mb</li>
+                        </ul>
+                    </div>
+                    <div class="barbox2">
+                        <ul class="clearfix">
+                            <li class="pulll_left">申请认证用户总数</li>
+                            <li class="pulll_left">认证成功率</li>
+                            <li class="pulll_left">存储空间</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="map">
+                    <div class="map1"><img src="static/display/images/lbx.png"></div>
+                    <div class="map2"><img src="static/display/images/jt.png"></div>
+                    <div class="map3"><img src="static/display/images/map.png"></div>
+                    <div class="map4" id="map_1"></div>
+                    <div style="
+                            position: relative;
+                            left: 6.23%;
+                            top: -47%;
+                            margin-top: .2rem;
+                            z-index: 6;
+                    ">
+                        <img src="static/display/images/sata.png" style="width: 42px;" title="天智一号">
+                    </div>
+                    <div style="
+                            position: relative;
+                            left: 72%;
+                            top: -94%;
+                            margin-top: .2rem;
+                            z-index: 6;
+                    ">
+                        <img src="static/display/images/sata.png" style="width: 42px;" title="天智二号">
+                    </div>
+                    <div style="
+                            position: relative;
+                            left: 55%;
+                            top: -28%;
+                            margin-top: .2rem;
+                            z-index: 6;
+                    ">
+                        <img src="static/display/images/sata.png" style="width: 42px;" title="天智三号">
+                    </div>
+                    <!-- ncc -->
+                    <div style="
+                            position: relative;
+                            left: 62%;
+                            top: -71%;
+                            margin-top: .2rem;
+                            z-index: 6;
+                    ">
+                        <img src="static/display/images/ncc.png" style="width: 42px;" title="NCC">
+                    </div>
+                    <!-- user -->
+                    <div style="
+                            position: relative;
+                            left: 38%;
+                            top: -93%;
+                            margin-top: .2rem;
+                            z-index: 6;
+                            /* display: none */
+                    " id="user_icon">
+                        <img src="static/display/images/user.png" style="width: 42px;" title="用户">
+                    </div>
+                    <!-- 线条 -->
+                    <div style="
+                            position: relative;
+                            left: -12%;
+                            top: -120%;
+                            margin-top: .2rem;
+                            z-index: 6;
+                    ">
+                        <svg class="svg1" version="1.1" id="svg_1" xmlns="http://www.w3.org/2000/svg"
+                            xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 1334 615"
+                            style="enable-background:new 0 0 1334 622; " xml:space="preserve">
+
+                            <style type="text/css">
+                                .st1 {
+                                    fill: #FFFFFF;
+                                    stroke: #000000;
+                                    stroke-dasharray: 20;
+                                }
+
+                                .path {
+
+                                    stroke-dasharray: 1000;
+                                    stroke-dashoffset: 1000;
+                                    stroke: #fcf8e3;
+                                    stroke-width: 4px;
+                                    animation: dash 4.5s linear forwards;
+
+                                }
+
+                                .path1 {
+                                    transition: all 5s;
+                                }
+
+                                @keyframes dash {
+                                    from {
+                                        stroke-dashoffset: 1000;
+                                    }
+
+                                    to {
+                                        stroke-dashoffset: 0;
+                                    }
+                                }
+                            </style>
+                            <line class="st0 path" id="line1" x1="660" y1="260" x2="322" y2="342"></line>
+                            <line class="st0 path" id="line2" x1="322" y1="342" x2="660" y2="260"></line>
+                            <line class="st0 path" id="line3" x1="322" y1="355" x2="984" y2="373"></line>
+                            <line class="st0 path" id="line4" x1="984" y1="373" x2="322" y2="355"></line>
+                            <!-- <line class="st1" x1="536" y1="474" x2="754.7" y2="186" /> -->
+                        </svg>
+                        <div>
+                            <!-- <button type="button" class="btn btn-success btn-lg" onclick="lineRun()">开始认证</button> -->
+                        </div>
+                    </div>
+                    
+                </div>
+            </li>
+           <li>
+                <div class="boxall" style="height:4.3rem">
+                    <div class="alltitle">实时接入状态</div>
+                    <div class="addnew">
+                        <div class="tit02"><span>新增用户列表</span></div>
+                        <table class="table" id="table">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        接入用户
+                                    </th>
+                                    <th>
+                                        接入时间
+                                    </th>
+                                    <th>
+                                        接入状态
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- <tr>
+                                    <td>
+                                        IgpX****
+                                    </td>
+                                    <td>
+                                        2019-06-27 09:52:38
+                                    </td>
+                                    <td>
+                                        请求卫星
+                                    </td>
+                                </tr> -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="boxfoot"></div>
+                </div>
+                <div class="boxall" style="height: 4.3rem">
+                    <div class="alltitle">接入日志信息</div>
+                    <div align="center">
+                        <textarea id="log" readonly="readonly" cols="30" rows="10">
+						  </textarea>
+                    </div>
+                    <div class="boxfoot"></div>
+                </div>
+            </li>
+        </ul>
+    </div>
+    <!-- <div class="back"></div> -->
+    <!-- <script type="text/javascript" src="js/china.js"></script> -->
+    <!-- <script type="text/javascript" src="js/area_echarts.js"></script> -->
+    <!-- <script type="text/javascript" src="static/display/js/jquery.waypoints.min.js"></script>
+    <script type="text/javascript" src="static/display/js/jquery.countup.min.js"></script>
+    <script type="text/javascript">
+        $('.counter').countUp();
+    </script> -->
+    <script type="text/javascript" src="static/display/js/push.js" charset="utf-8"></script>
+</body>
+
+</html>
