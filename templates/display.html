@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>认证界面</title>
+  <script type="text/javascript" src="../static/js/jquery.min.js"></script>
+  <script type="text/javascript" src="../static/js/socket.io.min.js"></script>
+	<link rel="stylesheet" href="../static/css/bootstrap.min.css">
+  <script src="../static/js/bootstrap.min.js"></script>
+  <script language="JavaScript">
+            function clockTime()
+            {
+                var today=new Date();//定义日期对象
+                var yyyy = today.getFullYear();//通过日期对象的getFullYear()方法返回年
+                var MM = today.getMonth()+1;//通过日期对象的getMonth()方法返回年
+                var dd = today.getDate();//通过日期对象的getDate()方法返回年
+                var hh=today.getHours();//通过日期对象的getHours方法返回小时
+                var mm=today.getMinutes();//通过日期对象的getMinutes方法返回分钟
+                var ss=today.getSeconds();//通过日期对象的getSeconds方法返回秒
+                // 如果分钟或小时的值小于10，则在其值前加0，比如如果时间是下午3点20分9秒的话，则显示15：20：09
+                MM=checkTime(MM);
+                dd=checkTime(dd);
+                mm=checkTime(mm);
+                ss=checkTime(ss);
+                var day; //用于保存星期（getDay()方法得到星期编号）
+                if(today.getDay()==0)   day   =   "星期日 "
+                if(today.getDay()==1)   day   =   "星期一 "
+                if(today.getDay()==2)   day   =   "星期二 "
+                if(today.getDay()==3)   day   =   "星期三 "
+                if(today.getDay()==4)   day   =   "星期四 "
+                if(today.getDay()==5)   day   =   "星期五 "
+                if(today.getDay()==6)   day   =   "星期六 "
+                document.getElementById('nowDateTimeSpan').innerHTML=yyyy+"-"+MM +"-"+ dd +" " + hh+":"+mm+":"+ss+"   " + day;
+                setTimeout('clockTime()',1000);//每一秒中重新加载startTime()方法
+            }
+
+            function checkTime(i)
+            {
+                if (i<10){
+                    i="0" + i;
+                }
+                  return i;
+            }
+        </script>
+  <style>
+    #header {
+      color: cadetblue;
+      text-align: center;
+      padding: 50px;
+      font-size: 60px;
+      text-shadow: -1px -1px white,
+                    3px  3px lightblue;
+    }
+    #title{
+      background-color: #31708f;
+    }
+
+    .button {
+        /* background-color: #4CAF50; /* Green */
+        border: none;
+        color: white;
+        padding: 15px 32px;
+        /* border-radius: 100px; */
+        /* text-align: center; */
+        text-decoration: none;
+        display: inline-block;
+        /* font-size: 16px; */
+        /* margin: 4px 2px; */
+        cursor: pointer;
+        -webkit-transition-duration: 0.4s; /* Safari */
+        transition-duration: 0.4s;
+    }
+
+    .button2:hover {
+        box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);
+    }
+
+    .button1 {
+      display: inline-block;
+      border-radius: 10px;
+      background-color: #f4511e;
+      border: none;
+      color: #FFFFFF;
+      text-align: center;
+      font-size: 28px;
+      padding: 20px;
+      width: 200px;
+      transition: all 0.5s;
+      cursor: pointer;
+      /* margin: 5px; */
+    }
+
+    .button1 span {
+      cursor: pointer;
+      display: inline-block;
+      position: relative;
+      transition: 0.5s;
+      }
+
+    .button1 span:after {
+      content: '»';
+      position: absolute;
+      opacity: 0;
+      top: 0;
+      left: -20px;
+      transition: 0.5s;
+      }
+
+    .button1:hover span {
+      padding-left: 25px;
+      }
+
+    .button1:hover span:after {
+      opacity: 1;
+      left: 0;
+      }
+
+    #nav {
+      line-height: 30px;
+      height: 300px;
+      width: 960px;
+      float: right;
+      padding: 28px;
+    }
+
+    #navcolor{
+      background-color: #eeeeee;
+      height: 300px;
+    }
+
+    #section {
+      line-height: 30px;
+      color: black;
+      padding-left: 20px;
+    }
+
+    #sectioncolor{
+      background-color: #ccc;
+      height: 300px;
+    }
+
+    #footer {
+      color: white;
+      clear: both;
+      text-align: center;
+    }
+
+    #footercolor{
+      background-color: #0066ff;
+    }
+
+    #statusinfo{
+      color: #337ab7;
+      font-size: 36px;
+      font-weight: bold;
+      padding-left: 10px
+    }
+
+    #detailsinfo{
+      color: #337ab7;
+      font-size: 36px;
+      font-weight: bold;
+      padding-left: 10px;
+    }
+
+    #simple{
+      font-size: 16px; /* 字体大小 */
+      color: black;
+    }
+
+    #simpleResult {
+      color: red;
+      font-size: 30px;
+      padding-left: 10px;
+    }
+
+    #result {
+      /*line-height: 30px;*/
+      font-size: 17px; /* 字体大小 */
+      width: 100%;
+      float: right;
+      /*padding: 5px;*/
+    }
+
+    #log {
+      float: center;
+      width: 100%;
+    }
+
+    .loading .pic{
+        width: 106px;
+        height: 106px;
+        /* border:1px solid red; */
+        background: url(static/loading3.gif);
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        /* margin: auto; */
+        /* margin-left: 700px;
+        margin-top: 500px; */
+    }
+
+   body{background-image:url("../static/authbackground.png");}
+
+  </style>
+</head>
+<body onload="clockTime()" color="#337ab7">
+  <span id="nowDateTimeSpan" style="font-size:23px;float:right"></span></font>
+  <div class="container">
+  	<div class="row clearfix">
+  		<div class="col-md-12 column"> <!--认证相关信息界面-->
+        <div id="header">认证界面</div>
+  		</div>
+  	</div>
+  	<div class="row clearfix">  <!--按钮设置-->
+  		<div class="col-md-4 column">
+        <!--<div id="button">-->
+         <button  class="button button2" style="width:165px;height:70px;font-size:25px;margin-left:0px;background-color:#4CAF50;" onclick="send()">开始认证 </button>
+          <!--</div>-->
+          <br>
+          </br>
+  		</div>
+      <div class="col-md-4 column">
+        <!--<div id="button">-->
+         <button  class="button button2" style="width:165px;height:70px;font-size:25px;background-color:#a94442" onclick="sendtwice()">二次认证 </button>
+          <!--</div>-->
+          <br>
+          </br>
+  		</div>
+  		<div class="col-md-4 column">
+         <button type="button1" class="button1" style="width:165px;height:70px;font-size:25px;margin-left:195px" onclick="Return()"><span>返回</span></button>
+         <br>
+         </br>
+      </div>
+  	</div>
+  	<!--<div class="row clearfix">
+  		<div class="col-md-12 column">  进度设置
+        <h2>认证进度</h2>
+        <div class="progress progress-striped active">
+          <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 80%;">
+            <span class="sr-only">80% 完成</span>
+              </div>
+                </div>  jishi*
+  		</div>
+  	</div>-->
+  	<div class="row clearfix">
+  		<div class="col-md-6 column"> <!--状态信息-->
+        <div id="navcolor">
+        <div id="statusinfo">状态信息</div>
+            <form>
+              <br>
+            </br>
+              <p5 id="simple"></p5>
+              <br><p5 id="simpleResult"></p5></br>
+              <br>
+              </br>
+            </form>
+          </div>
+  		</div>
+  		<div class="col-md-6 column">  <!--详细请求以及计时操作-->
+        <div id="sectioncolor">
+          <div id="detailsinfo">详细请求信息及时间信息</div>
+          <div id="section">
+        </div>
+  		</div>
+    </div>
+  	</div>
+  	<div class="row clearfix">
+  		<div class="col-md-12 column">  <!--用户终端日志-->
+        <!--<div id="footer">-->
+
+          <div class="panel panel-default">
+          		<div class="panel-heading" style="border-color:#333;background-color:#999">
+          			<h4 class="panel-title">
+          				<a data-toggle="collapse" data-parent="#accordion"
+          				   href="#collapseOne" style="color:blue;font-size:30px"><strong>用户终端日志</strong></a>
+          			</h4>
+          		</div>
+          		<div id="collapseOne" class="panel-collapse collapse in">
+          			<div class="panel-body">
+                  <textarea id="log" readonly="readonly" cols="130" rows="6">
+              </textarea>
+          			</div>
+          		</div>
+          	</div>
+
+        <!--<h4>用户终端日志</h4>
+        </div>-->
+
+  		</div>
+  	</div>
+  </div>
+
+  <script type="text/javascript" color="0,0,255" src="../static/js/canvas-nest.min.js"></script>
+  <script type="text/javascript" charset="utf-8">
+
+    $(document).ready(function () {
+      var socket = io.connect();
+//<br><p5 id=" Result">并显示认证请求结果 </p5></br>
+      socket.on('connect', function () {
+        // socket.emit('connect_event', { data: 'connected!' });
+         socket.emit('client_event', { data: '' });
+      })
+	  var NUM = 0
+      var tmp = ''
+      socket.on('server_response', function (msg) {
+        console.log(msg);
+        if (msg.data.length != 0 && tmp != msg.data[0]) {
+          change_tmp(msg.data);
+          //tmp = data.append(time)
+          // $('#log').append('<br>' + $('<div/>').text('Received #' + ': ' + msg.data).html());
+          // time = fnDate();
+          // $('#log').prepend('<br>' + $('<div/>').text(time + '------用户发起认证请求#' + ':' + tmp).html());
+
+          obj = JSON.parse(msg.data[0])
+          console.log(obj)
+
+          var simple = document.getElementById('simple');
+          var simpleResult = document.getElementById('simpleResult');
+          var details = document.getElementById('section');
+          var loading = '<div class="loading"><div class="pic"></div></div>';
+
+          if (obj.Ru) {
+            $("body").append(loading);  //加载显示
+            simple.innerHTML = "<h2><strong>&emsp;当前用户正在进行身份认证!</strong></h2>";
+            simpleResult.innerHTML = "";
+            //console.time("fnDate");
+            time = fnDatelog();
+            $('#log').prepend('<br>' + $('<div/>').text( time + '------发起认证请求#' + ':' + tmp + '\n').html());
+
+            startTime = fnDate();
+            //console.timeEnd("fnDate");
+            var toHTML = "<p6><big>开始时间：" + startTime + "</big><br><p6>用户请求信息:</p6><br>";
+            for (var i in obj) {
+              // alert(obj[i]);
+              if (i == "Options")
+              break;
+              if (i == "encode_data"){
+              obj[i] = obj[i].substring(0, 15);
+              toHTML += "<p6>" + i + ":" + obj[i] + "******" + "</p6><br>";
+              continue;
+            }
+              // break;
+              if (i == "ReqAuth")
+              continue;
+              toHTML += "<p6>" + i + ":" + obj[i] + "</p6><br>";
+            }
+            details.innerHTML = toHTML;
+          }
+
+          else if (obj.ReqAuth == "200") {
+            // simple.innerHTML = "正在向NCC请求用户\n" + obj.PIDu + "<br>的身份信息\n";
+            $(".loading").fadeOut(); //加载显示消失
+            time = fnDatelog();
+            $('#log').prepend('<br>' + $('<div/>').text(time + '------认证后接受到的消息#' + ': ' + msg.data + '\n').html());
+
+            var user = obj.PIDu.substring(0, 5) + "****";
+            simple.innerHTML = "<big>&emsp;用户身份编号:</big>" + "&emsp;" + user ;
+            simpleResult.innerHTML = "<br><strong>&emsp;认证成功!</strong>" + "<strong>成功接入的卫星!</strong>" + "<br>&emsp;可以访问网站以及进行图像传输!</h6>";
+            endTime = fnDate();
+            toHTML = "<br><p6><big>认证结束时间: " + endTime +"<br>";
+            toHTML = toHTML + "<br><h3><big><strong>认证所需时间:" + obj.authtime + "ms";
+            details.innerHTML = toHTML;
+          }
+
+          //错误处理
+          else if (obj.ReqAuth == "500" &&  NUM < 3 ) {
+            $(".loading").fadeOut();  //加载显示消失
+            time = fnDatelog();
+            $('#log').prepend('<br>' + $('<div/>').text(time + '------认证后接受到的消息#' + ':' + msg.data + '\n').html());
+
+            var user = obj.PIDu.substring(0, 5) + "****";
+            simple.innerHTML = "<big>&emsp;用户身份编号:</big>" + "&emsp;" + user ;
+            simpleResult.innerHTML = "<br><strong>&emsp;认证失败!</strong>" + "<br>&emsp;请重新认证!" + "<br>&emsp;失败3次后当天不能再进行认证。</h6>";
+            setTimeout(function() { DelayRun(); }, 5000);
+            NUM = NUM + 1;
+          }
+          else if (obj.ResAuth == "rspSecondAuth")
+          {
+            $(".loading").fadeOut(); //加载显示消失
+            time = fnDatelog();
+            $('#log').prepend('<br>' + $('<div/>').text(time + '------认证后接受到的消息#' + ': ' + msg.data + '\n').html());
+
+            var user = obj.IDu.substring(0, 5) + "****";
+            simple.innerHTML = "<big>&emsp;用户身份编号:</big>" + "&emsp;" + user ;
+            simpleResult.innerHTML = "<br><strong>&emsp;二次认证成功!</strong>" + "<strong>成功接入的卫星!</strong>" + "<br>&emsp;可以访问卫星网站以及进行图像传输!</h6>";
+            endTime = fnDate();
+            toHTML = "<br><p6><big>认证结束时间: " + endTime +"<p6><br>";
+            toHTML =  toHTML + "<br><h3><big><strong>二次认证所需时间:" + obj.authtime + "ms";
+            details.innerHTML = toHTML;
+		      }
+          else
+          {
+            $(".loading").fadeOut();
+            time = fnDatelog();
+            $('#log').prepend('<br>' + $('<div/>').text(time + '------认证后接受到的消息#' + ': ' + msg.data + '\n').html());
+
+            simple.innerHTML = "<br><big><h2><strong>&emsp;用户认证失败!";
+            simpleResult.innerHTML = "<br><strong>&emsp;认证次数已用完,当天不能再进行认证 </h6>";
+		  }
+        }
+      });
+
+      function DelayRun() {
+        simpleResult.innerHTML = " ";
+      }
+
+      function fnDate() {
+        var date = new Date();
+        //var year = date.getFullYear();
+        //var month = date.getMonth();
+        //var data = date.getDate();
+        var hours = date.getHours();
+        var minute = date.getMinutes();
+        var second = date.getSeconds();
+        //var millisecond = date.getMilliseconds();
+        hours=checkTime(hours);
+        minute=checkTime(minute);
+        second=checkTime(second);
+        var nowTime = hours + ":" + minute + ":" + second;
+        return nowTime;
+      }
+
+      function fnDatelog() {
+        var date = new Date();
+        var year = date.getFullYear();
+        var month = date.getMonth();
+        var month = month + 1;
+        var data = date.getDate();
+        var hours = date.getHours();
+        var minute = date.getMinutes();
+        var second = date.getSeconds();
+        //var millisecond = date.getMilliseconds();
+        year=checkTime(year);
+        month=checkTime(month);
+        data=checkTime(data);
+        hours=checkTime(hours);
+        minute=checkTime(minute);
+        second=checkTime(second);
+        var nowTimelog = year + "年" + month + "月" + data + "日" + hours + "时" + minute + "分" + second + "秒";
+        return nowTimelog;
+      }
+
+
+      function checkTime(i)
+      {
+          if (i<10){
+              i="0" + i;
+          }
+            return i;
+      }
+
+      // 改变全局变量tmp的值
+      function change_tmp(data) {
+        $.ajax({
+          async: false,
+          success: function () {
+            tmp = data;
+          }
+        })
+      }
+
+    });
+
+      function send() {
+      // 通知用户发起认证
+         var url = "http://127.0.0.1:8888/userAuth";
+         $.get(url, function (data) {
+			if (data == "1") {
+				console.log("认证成功。。。");
+            } else {
+				console.log("认证失败。。。");
+				}
+         });
+       }
+
+       function sendtwice() {
+           var url = "http://127.0.0.1:8888/userAuthtwice"; //修改
+           $.get(url, function (data) {
+  			if (data == "1") {
+  				console.log("认证成功。。。");
+              } else {
+  				console.log("认证失败。。。");
+  				}
+           });
+         }
+
+         //打开用户选项配置窗口
+         function Return() {
+           if(confirm("你确定要返回主页吗？是－选择确定，否-选择取消")){
+             //window.location.href="http://190.168.42.128:8888/success"
+             window.location.href="http://127.0.0.1:8888/";
+           }
+
+         }
+
+  </script>
+</body>
+
+</html>

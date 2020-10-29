@@ -1,0 +1,2 @@
+opj_compress.exe -i lena.png -o "C:\Users\CM1\Desktop\transcoding\transcoding\Service Provider\lena.j2k" -TP R
+opj_decompress.exe -i lena.j2k -o lena.png
