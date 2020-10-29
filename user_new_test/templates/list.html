@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>认证客户端</title>
+  <script type="text/javascript" src="../static/js/jquery.min.js"></script>
+  <script type="text/javascript" src="../static/js/socket.io.min.js"></script>
+  <script src="../static/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="../static/css/bootstrap.min.css">
+
+  <style  type="text/css">
+body {
+    /* background-color: green;
+    background-image: -webkit-radial-gradient(black 15%, transparent 16%), -webkit-radial-gradient(black 15%, transparent 16%), -webkit-radial-gradient(rgba(255, 255, 255, 0.1) 15%, transparent 20%), -webkit-radial-gradient(rgba(255, 255, 255, 0.1) 15%, transparent 20%);
+    background-image: radial-gradient(black 15%, transparent 16%), radial-gradient(black 15%, transparent 16%), radial-gradient(rgba(255, 255, 255, 0.1) 15%, transparent 20%), radial-gradient(rgba(255, 255, 255, 0.1) 15%, transparent 20%);
+    background-position: 0 0px, 8px 8px, 0 1px, 8px 9px;
+    background-size: 16px 16px; */
+    background:url(../static/userbackground.jpg)  no-repeat center center;
+    background-size:cover;
+    background-color:#104773;
+}
+/* @font-face {
+    font-family: 'icomoon';
+    src: url('font/icomoon.eot');
+    src: url('font/icomoon.eot?#iefix') format('embedded-opentype'), url('font/icomoon.svg#icomoon') format('svg'), url('font/icomoon.woff') format('woff'), url('font/icomoon.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+} */
+.controls_button {
+  /* 选择所有 class=controls_button的元素 */
+    /* width: 500px; */
+    /* 左外边距 */
+    margin-left: 200px;
+}
+.button {
+    width: 150px;
+    height: 150px;
+    /* margin-left: 90px; */
+    font-size: 0;
+    border-radius: 50%;
+    border: none;
+    box-shadow: 0 1px 5px rgba(255,255,255,.5) inset, 0 -2px 5px rgba(0,0,0,.3) inset, 0 3px 8px rgba(0,0,0,.8);
+    background: -webkit-radial-gradient( circle at top center, green, green, green);
+    background: radial-gradient(circle at top center, green, green, green);
+}
+.button:after {
+    font-family: 'icomoon';
+    font-weight: normal;
+    -webkit-font-smoothing: antialiased;
+    font-size: 30px;
+    content: "进入认证";
+    color: white;
+    text-shadow: 0 3px 10px green, 0 -3px 10px green;
+}
+
+.button:hover:after {
+    color: #fff;
+    text-shadow: 0 1px 20px #fccdda, 1px 0 14px #fccdda;
+}
+.button:active {
+    box-shadow: 0 2px 7px rgba(0,0,0,.5) inset, 0 -3px 10px rgba(0,0,0,.1) inset, 0 1px 3px rgba(255,255,255,.5);
+    background: -webkit-radial-gradient(circle at top center, green, green, green);
+    background: radial-gradient(circle at top center, green, green, green);
+}
+
+.controls_button1 {
+    /* width: 500px; */
+    margin-right: 200px;
+    float:right;
+}
+.button1 {
+    width: 150px;
+    height: 150px;
+    /* margin-left: 100px; */
+    font-size: 0;
+    border-radius: 50%;
+    border: none;
+    box-shadow: 0 1px 5px rgba(255,255,255,.5) inset, 0 -2px 5px rgba(0,0,0,.3) inset, 0 3px 8px rgba(0,0,0,.8);
+    background: -webkit-radial-gradient( circle at top center, #8a6d3b, #8a6d3b, #8a6d3b);
+    background: radial-gradient(circle at top center, #8a6d3b, #8a6d3b, #8a6d3b);
+}
+.button1:after {
+    font-family: 'icomoon';
+    font-weight: normal;
+    -webkit-font-smoothing: antialiased;
+    font-size: 30px;
+    content: "用户可配置选项";
+    color: white;
+    text-shadow: 0 3px 10px #8a6d3b, 0 -3px 10px #8a6d3b;
+}
+
+.button1:hover:after {
+    color: #fff;
+    text-shadow: 0 1px 20px #fccdda, 1px 0 14px #fccdda;
+}
+.button1:active {
+    box-shadow: 0 2px 7px rgba(0,0,0,.5) inset, 0 -3px 10px rgba(0,0,0,.1) inset, 0 1px 3px rgba(255,255,255,.5);
+    background: -webkit-radial-gradient(circle at top center, #8a6d3b, #8a6d3b, #8a6d3b);
+    background: radial-gradient(circle at top center, #8a6d3b, #8a6d3b, #8a6d3b);
+}
+
+.controls_button2 {
+    /* width: 500px; */
+    margin-left: 200px;
+}
+.button2 {
+    width: 150px;
+    height: 150px;
+    /* margin-left: 90px; */
+    font-size: 0;
+    border-radius: 50%;
+    border: none;
+    box-shadow: 0 1px 5px rgba(255,255,255,.5) inset, 0 -2px 5px rgba(0,0,0,.3) inset, 0 3px 8px rgba(0,0,0,.8);
+    background: -webkit-radial-gradient( circle at top center, blue, blue, blue);
+    background: radial-gradient(circle at top center, blue, blue, blue);
+}
+.button2:after {
+    font-family: 'icomoon';
+    font-weight: normal;
+    -webkit-font-smoothing: antialiased;
+    font-size: 30px;
+    content: "访问网站";
+    color: white;
+    text-shadow: 0 3px 10px blue, 0 -3px 10px blue;
+}
+
+.button2:hover:after {
+    color: #fff;
+    text-shadow: 0 1px 20px #fccdda, 1px 0 14px #fccdda;
+}
+.button2:active {
+    box-shadow: 0 2px 7px rgba(0,0,0,.5) inset, 0 -3px 10px rgba(0,0,0,.1) inset, 0 1px 3px rgba(255,255,255,.5);
+    background: -webkit-radial-gradient(circle at top center, blue, blue, blue);
+    background: radial-gradient(circle at top center, blue, blue, blue);
+}
+
+.controls_button3 {
+    /* width: 500px; */
+   margin-right: 200px;
+   float: right;
+}
+.button3 {
+    width: 150px;
+    height: 150px;
+    /* margin-left: 100px; */
+    font-size: 0;
+    border-radius: 50%;
+    border: none;
+    box-shadow: 0 1px 5px rgba(255,255,255,.5) inset, 0 -2px 5px rgba(0,0,0,.3) inset, 0 3px 8px rgba(0,0,0,.8);
+    background: -webkit-radial-gradient( circle at top center, brown, brown, brown);
+    background: radial-gradient(circle at top center, brown, brown, brown);
+}
+.button3:after {
+    font-family: 'icomoon';
+    font-weight: normal;
+    -webkit-font-smoothing: antialiased;
+    font-size: 30px;
+    content: "请求图片";
+    color: white;
+    text-shadow: 0 3px 10px brown, 0 -3px 10px brown;
+}
+
+.button3:hover:after {
+    color: #fff;
+    text-shadow: 0 1px 20px #fccdda, 1px 0 14px #fccdda;
+}
+.button3:active {
+    box-shadow: 0 2px 7px rgba(0,0,0,.5) inset, 0 -3px 10px rgba(0,0,0,.1) inset, 0 1px 3px rgba(255,255,255,.5);
+    background: -webkit-radial-gradient(circle at top center, brown, brown, brown);
+    background: radial-gradient(circle at top center, brown, brown, brown);
+}
+
+/* 
+.imageDiv{
+            float: left;
+            margin-left: 10px;
+}
+.deleteImgA{
+            display: block;text-align: center
+}
+.priImg{
+            height:140px;
+            width:160px;
+} */
+    /* #header {
+      color: white;
+      text-align: center;
+      padding: 50px;
+    }
+
+    #title{
+      background-color: #31708f;
+    } */
+
+    #button {
+      /* 这个个人暂时认为用不到 */
+    	border-width: 0px; /* 边框宽度 */
+    	border-radius: 3px; /* 边框半径 */
+    	/*background: #1E90FF; /* 背景颜色 */
+    	cursor: pointer; /* 鼠标移入按钮范围时出现手势 */
+    	outline: none; /* 不显示轮廓线 */
+    	font-family: Microsoft YaHei; /* 设置字体 */
+    	color: white; /* 字体颜色 */
+    	font-size: 17px; /* 字体大小 */
+      /*float: center;*/
+      /*margin-right: 63px;*/
+      /*margin-left: 63px;*/
+	  }
+/* 
+    #nav {
+      line-height: 30px;
+      height: 300px;
+      width: 960px;
+      float: right;
+      padding: 28px;
+    }
+
+    #navcolor{
+      background-color: #eeeeee;
+    }
+
+    #section {
+      height: 280px;
+      line-height: 30px;
+    }
+
+    #sectioncolor{
+      background-color: #ccc;
+    }
+
+    #footer {
+      color: white;
+      clear: both;
+      text-align: center;
+      height: 40px;
+    } */
+
+ /*    #footercolor{
+      background-color: blue;
+    } */
+
+    /* #background{ */
+      /* 选择所有 id="firstname" 的元素 */
+      /* background: url("../static/userbackground.jpg") no-repeat;
+      background-size: cover; */
+    /* } */
+
+    #photosize{
+      height: 427.5px;
+      width: 570px;
+    }
+
+    /* #loading
+    {
+        position:fixed;
+        top:40%;
+        left:45%;
+        z-index:999;
+    } */
+
+  </style>
+</head>
+<body id="background" >
+  <img src="../static/userbackground.jpg" style="display: none" />  
+<div class="container" style="width:100%">
+	<div class="row clearfix">
+		<div class="col-md-12 column">
+			<div class="btn-group">
+				 <button class="btn btn-block btn-info" type="button" style="width:70px; height:36px; font-size:16px" onclick='Login()'>注册</button>
+			</div>
+			<div class="row clearfix">
+				<div class="col-md-12 column">
+            <h1 class="text-center"><strong><big><font color="white">用户终端操作界面</font></big></strong></h1>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row clearfix">
+		<div class="col-md-12 column">
+			<div class="row clearfix">
+				<div class="col-md-6 column">
+          <br>
+          </br>
+          <br>
+          </br>
+          <div class="controls_button">
+         <button type="button" class="button" onclick="access()">认证 </button>
+         <br>
+         </br>
+         <br>
+         </br>
+       </div>
+        </div>
+
+				<div class="col-md-6 column">
+          <br>
+          </br>
+          <br>
+          </br>
+          <div class="controls_button1">
+          <button type="button1" class="button1" onclick="optionswindows()">配置</button>
+          <br>
+          </br>
+          <br>
+          </br>
+        </div>
+				</div>
+			</div>
+			<div class="row clearfix">
+				<div class="col-md-6 column">
+          <br>
+          </br>
+          <div class="controls_button2">
+            <button type="button2" class="button2"  onclick="webbrowseraccess()">访问</button>
+            <br>
+            </br>
+            <br>
+            </br>
+          <!--<button class="btn btn-block btn-danger" style="height:200px;font-size:20px;padding:12px" onclick="webbrowseraccess()">访问网站</button>-->
+				</div>
+      </div>
+				<div class="col-md-6 column">
+          <br>
+          </br>
+          <div class="controls_button3">
+         <button type="button3" class="button3" onclick="datatransportoption()">图片</button>
+         <br>
+         </br>
+         <br>
+         </br>
+       </div>
+				</div>
+			</div>
+	</div>
+</div>
+</div>
+
+        <div class="modal fade " id="register"  tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+       <!--定义模态框，过渡效果为淡入id为myModal,tabindex=-1可以禁用使用tab切换，aria-labelledby用于引用模态框的标题，aria-hidden=true保持模态框在触发前窗口不可见-->
+            <div class="modal-dialog">
+               <!--  显示模态框对话框模型（若不写下一个div则没有颜色）  -->
+               <div class="modal-content">
+                   <!--  显示模态框白色背景，所有内容都写在这个div里面  -->
+
+                   <div class="btn-info modal-header">
+                       <!--  模态框标题  -->
+                       <button type="button" class="close" data-dismiss="modal">&times;</button>
+                       <!--  关闭按钮  -->
+                       <h4>您好，请进行注册</h4>
+                       <!--  标题内容  -->
+                   </div>
+
+                   <div class="modal-body">
+                       <!--  模态框内容，我在此处添加一个表单 -->
+                       <form method="post" action="register" class="form-horizontal" role="form">
+                           <div class="form-group">
+                               <label for="uname" class="col-sm-2 control-label">姓名</label>
+                               <div class="col-sm-9">
+                                   <input type="text" id="uname" name="uname" class="form-control well" placeholder="请输入姓名"/>
+                               </div>
+                           </div>
+                           <div class="form-group">
+                               <label for="upwd" class="col-sm-2 control-label">用户身份证号码</label>
+                               <div class="col-sm-9">
+                                   <input type="password" id="upwd" name="upwd" class="form-control well" placeholder="请输入用户身份证号码"/>
+                               </div>
+                           </div>
+                       </form>
+                   </div>
+
+                   <div class="modal-footer">
+                       <!--  模态框底部样式，一般是提交或者确定按钮 -->
+                       <button  class="btn btn-info" onclick="add_info()">确定</button>
+                       <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                   </div>
+
+               </div><!-- /.modal-content -->
+           </div>
+       </div> <!-- /.modal -->
+
+       <div class="modal fade" id="information" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+           aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                  <div class="modal-header">
+                    <button class="close" aria-hidden="true" type="button" data-dismiss="modal">×</button>
+                        <h4 class="modal-title" id="myModalLabel">用户注册后所获得的信息</h4>
+                               </div>
+                               <div class="modal-body" id="tanchu">
+                                   <div class="bs-example" data-example-id="hoverable-table">
+                                       <table class="table table-hover" id="btable">
+                                           <thead>
+                                           <tr>
+                                               <th>消息名称</th>
+                                               <th>内容</th>
+                                           </tr>
+                                           </thead>
+                                           <tbody id="tableble">
+                                                <tr>
+                                                  <td>userKey</td>
+                                                  <td>
+                                                    <div id="idvalueKey">  //将接受从后端接受到的数据传递到模态框中
+                                                    </div>
+                                                  </td>
+                                                </tr>
+                                                  <tr>
+                                                    <td>preRandom</td>
+                                                    <td>
+                                                      <div id="idvalueRandom">
+                                                      </div>
+                                                    </td>
+                                                  </tr>
+                                                  <tr>
+                                                    <td>userId</td>
+                                                    <td>
+                                                      <div id="idvalueId">
+                                                      </div>
+                                                    </td>
+                                                  </tr>
+                                           </tbody>
+                                       </table>
+                                   </div>
+                               </div>
+                               <div class="modal-footer">
+                                   <button class="btn btn-default" type="button" data-dismiss="modal">关闭</button>
+                               </div>
+                           </div><!-- /.modal-content -->
+                       </div><!-- /.modal -->
+                   </div>
+
+
+<!-- 详细信息模态框（Modal） -->
+<div class="modal fade" id="startAuth" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="btn-info" style="padding:15px" class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">可配置选项</h4>
+            </div>
+            <form  action= "options" method="post">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="name">hash算法</label>
+                        <select class="form-control" id="hashOption" name="hashOption">
+                            <option value="1">SHA1</option>
+                            <option value="2">SHA256</option>
+                            <option value="3">SHA512</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="name">加密算法</label>
+                        <select class="form-control" id="keyOption" name="keyOption">
+                            <option value="1">AES</option>
+                            <option value="2">DES</option>
+                            <option value="3">3DES</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="name">随机数长度</label>
+                        <select class="form-control" id="RandomOption" name="RandomOption">
+                            <option value="1">短</option>
+                            <option value="2" selected = "selected">较长</option>
+                            <option value="3">长</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="submit" class="btn btn-info">提交</button>
+                  <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                </div>
+            </form>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal -->
+</div>
+<!-- 模态框（Modal） -->
+
+<div class="modal fade" id="pictureoption" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+    aria-hidden="true">
+     <div class="modal-dialog">
+       <div class="modal-content">
+           <div class="btn-info" style="padding:15px" class="modal-header">
+             <button class="close" aria-hidden="true" type="button" data-dismiss="modal">×</button>
+                 <h4 class="modal-title" id="myModalLabel">请求图片选项及操作</h4>
+                        </div>
+                        <div class="modal-body" id="tanchu">
+                            <div class="bs-example" data-example-id="hoverable-table">
+                                <table class="table table-hover" id="btable">
+                                    <thead>
+                                    <tr>
+                                        <th><big>序号</big></th>
+                                        <th><big>图片名称</big></th>
+                                        <th><big>清晰度</big></th>
+                                        <th><big>操作</big></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="tableble">
+                                         <tr>
+                                           <div id="numberOption" name="numberOption">
+                                           <td><h5><option value="1">1</option></td>
+                                           </div>
+                                           <td><h5>地球</td>
+                                           <td>
+                                             <select class="form-control" style="width:50%;height:30px;padding:unset" id="resolutionOption1" name="resolutionOption1">
+                                                 <option value="1">低</option>
+                                                 <option value="2">中</option>
+                                                 <option value="3">高</option>
+                                             </select>
+                                           </td>
+                                           <td>
+                                             <button type="button" class="close" style="color:blue; float:left;padding:6px" onclick="datatransport1()">提交</button>
+                                           </td>
+                                         </tr>
+                                         <tr>
+                                           <div id="numberOption" name="numberOption">
+                                           <td><h5><option value="2">2</option></td>
+                                           </div>
+                                           <td><h5>斑马</td>
+                                           <td>
+                                             <select class="form-control" style="width:50%;height:30px;padding:unset" id="resolutionOption2" name="resolutionOption2">
+                                                 <option value="1">低</option>
+                                                 <option value="2">中</option>
+                                                 <option value="3">高</option>
+                                             </select>
+                                             </div>
+                                           </td>
+                                           <td>
+                                             <button  type="button" class="close" style="color:blue; float:left;padding:6px" onclick="datatransport2()">提交</button>
+                                           </td>
+                                         </tr>
+                                         <tr>
+                                           <div id="numberOption" name="numberOption">
+                                           <td><h5><option value="3">3</option></td>
+                                           </div>
+                                           <td><h5>豹子</td>
+                                           <td>
+                                             <select class="form-control" style="width:50%;height:30px;padding:unset" id="resolutionOption3" name="resolutionOption3">
+                                                 <option value="1">低</option>
+                                                 <option value="2">中</option>
+                                                 <option value="3">高</option>
+                                             </select>
+                                             </div>
+                                           </td>
+                                           <td>
+                                            <button  type="button" class="close" style="color:blue; float:left;padding:6px" onclick="datatransport3()">提交</button>
+                                           </td>
+                                         </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-danger" type="button" data-dismiss="modal">关闭</button>
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal -->
+            </div>
+
+<!-- 详细信息模态框（Modal） -->
+<div class="modal fade" id="showpicture" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+    aria-hidden="true">
+    <!-- 模态框（Modal） -->
+  	<div class="modal-dialog">
+  		<div class="modal-content">
+  			<div class="modal-header">
+  				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+  					&times;
+  				</button>
+  				<h4 class="modal-title" id="myModalLabel">图片传输成功</h4>
+  			</div>
+          <div class="modal-body" id="showimage">
+
+             </div><!-- /.box-body -->
+  			<div class="modal-footer">
+  				<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+  			</div>
+  		</div><!-- /.modal-content -->
+  	</div><!-- /.modal -->
+    <!-- /.modal -->
+</div>
+<!-- 模态框（Modal） -->
+
+
+<div class="modal fade" id="Test" tabindex="-1" role="dialog" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content" >
+            <div class="modal-body">
+              <h3>图片正在进行解密处理，请稍候！</h3>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+
+
+<!--<script type="text/javascript" charset="utf-8">-->
+<!-- <script> -->
+<script type="text/javascript" charset="utf-8">
+function add_info() {
+           //获取模态框数据
+           //var username = $('#usename').val();
+           //奇：可以加个时间戳，在服务崩了了或者没运行时，提示注册失败.
+           var idcard = $('#upwd').val();
+           var user = {"Idcard":idcard}
+           $.ajax({
+               type: "post",
+               url: "http://127.0.0.1:8888/register",
+              //  奇：url: "/register",
+               //Js值转换为 JSON 字符串
+               data: JSON.stringify(user),
+               // data: "Password=" password,
+               datatype: "json",
+               contentType: "application/json",
+               success: function (result) {
+                   if(result != "fail"){
+                     $('#register').modal('hide');
+                     alert("注册成功");
+                     var idvalueKey = document.getElementById('idvalueKey');    //将接受从后端接受到的数据传递到模态框中
+                     var idvalueRandom = document.getElementById('idvalueRandom');
+                     var idvalueId = document.getElementById('idvalueId');
+                     result = JSON.parse(result);
+                     idvalueKey.innerHTML  = result.userKey;
+                     idvalueRandom.innerHTML = result.preRandom;
+                     idvalueId.innerHTML = result.userId;
+                     $('#information').modal('show');
+
+                   }
+                   else {
+                     $('#register').modal('hide');
+                     alert("注册失败")
+                   }
+               }
+           });
+       }
+
+function Login(){
+  $('#register').modal('show');
+}
+
+function access(){
+  window.location.href="http://127.0.0.1:8888/authmessage";
+}
+
+//打开用户选项配置窗口
+function optionswindows() {
+    // // 通知用户发起认证
+    // $.get("http://127.0.0.1:8888/userAuth");
+
+    $('#startAuth').modal('show');
+    // 点击开始认证，向用户发起认证，触发线条运动
+    $("#btn-toAuth").click(function () {
+        console.log("test");
+        // console.log($("#form-test"));
+    });
+}
+
+function webbrowseraccess(){
+  if(confirm("你确定要访问网站吗？是－选择确定，否-选择取消")){
+    //window.location.href="http://192.168.42.128:8888/success"
+    window.open("http://127.0.0.1:8888/reqwebbrowser");
+  }
+ }
+
+function datatransportoption(){
+     $('#pictureoption').modal('show');
+ }
+
+function datatransport1(){
+    //window.location.href="http://192.168.42.128:8888/success"
+    var ratioId = $('#resolutionOption1').val();
+    var request_data = {"imgId":"1", "ratioId":ratioId};
+    $('#pictureoption').modal('hide');
+    $('#Test').modal('show');
+    $.ajax({
+            type:"post",
+            url: "http://127.0.0.1:8888/picture",
+            data: JSON.stringify(request_data),
+            // data: "Password=" password,
+            datatype: "json",
+            contentType: "application/json",
+              success: function (data) {
+                $('#Test').modal('hide');
+                if(data == 1){
+                  var time = Date.now();
+                  $("#showimage").empty();
+                  $("#showimage").append('<img src="static/lena.png?' + time + '"id="photosize">');
+                    $('#showpicture').modal('show');
+
+                }
+                else if (data == 2){
+                  alert("sessionid已过期，请再次认证!");
+                }
+                else{
+                  alert("未接收到图片!");
+                }
+              },
+              error: function () {
+                alert("错误!");
+             }
+      });
+
+}
+
+function datatransport2(){
+    var ratioId = $('#resolutionOption2').val();
+    var request_data = {"imgId":"2", "ratioId":ratioId};
+    $('#pictureoption').modal('hide');
+    $('#Test').modal('show');
+    $.ajax({
+            type:"post",
+            url: "http://127.0.0.1:8888/picture",
+            data: JSON.stringify(request_data),
+            // data: "Password=" password,
+            datatype: "json",
+            contentType: "application/json",
+              success: function (data) {
+                $('#Test').modal('hide');
+                if(data == 1){
+                  var time = Date.now();
+                  $("#showimage").empty();
+                  $("#showimage").append('<img src="static/lena.png?' + time + '" id="photosize">');
+                    $('#showpicture').modal('show');
+                }
+                else if (data == 2){
+                  alert("sessionid已过期，请再次认证!");
+                }
+                else{
+                  alert("未接收到图片!");
+                }
+              },
+              error: function () {
+                alert("错误!");
+             }
+      });
+
+}
+
+function datatransport3(){
+    var ratioId = $('#resolutionOption3').val();
+    var request_data = {"imgId":"3", "ratioId":ratioId};
+    $('#pictureoption').modal('hide');
+    $('#Test').modal('show');
+    $.ajax({
+            type:"post",
+            url: "http://127.0.0.1:8888/picture",
+            data: JSON.stringify(request_data),
+            // data: "Password=" password,
+            datatype: "json",
+            contentType: "application/json",
+              success: function (data) {
+                $('#Test').modal('hide');
+                if(data == 1){
+                  var time = Date.now();
+                  $("#showimage").empty();
+                  $("#showimage").append('<img src="static/lena.png?' + time + '" id="photosize">');
+                    $('#showpicture').modal('show');
+                }
+                else if (data == 2){
+                  alert("sessionid已过期，请再次认证!");
+                }
+                else{
+                  alert("未接收到图片!");
+                }
+              },
+              error: function () {
+                alert("错误!");
+             }
+      });
+
+}
+
+</script>
+</body>
+
+</html>
