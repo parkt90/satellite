@@ -32,7 +32,7 @@ def client_msg(msg):
     while 1:
         global conns
         emit('server_response', {'data': conns})
-        time.sleep(0.5)
+        time.sleep(1)
     
 
 # 用户请求卫星图片
@@ -130,8 +130,8 @@ def reqAuthFromUser():
         # qi 卫星收到用户数据，并做初步判断 真正延时和 2+2 S 认证延时2
         clear_and_add(json.dumps(userData))
         # m_lock.release()
-        time.sleep(1)
-        conns.clear
+        # time.sleep(1)
+        # conns.clear
         # m_lock.acquire()
         # 处理认证选项
         # qi 处理多线程时可能需要在这部分加锁
@@ -170,8 +170,8 @@ def reqAuthFromUser():
             #  qi 卫星收到用户数据，并做初步判断 真正延时和 8+2 S  认证延时6+2
             clear_and_add(data)
             # m_lock.release()
-            time.sleep(1)
-            conns.clear
+            # time.sleep(1)
+            # conns.clear
             # m_lock.acquire()
             return data
         except Exception, e:
@@ -186,7 +186,7 @@ def reqAuthFromUser():
                 })
             clear_and_add(data)
             # m_lock.release()
-            time.sleep(1)
+            # time.sleep(1)
             # m_lock.acquire()
             return Response(status=500, response=data)
     else:

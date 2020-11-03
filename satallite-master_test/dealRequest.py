@@ -66,7 +66,7 @@ def sendToNcc(satalliteData, userData):
     #  qi 卫星收到用户数据，连同自己数据一起发给NCC 真正延时和 4+2 S  认证延时2+2
     clear_and_add(data)
     # m_lock.release()
-    time.sleep(1)
+    # time.sleep(1)
     # 读取卫星信息
     # m_lock.acquire()
     with open("userInfo.json", "r") as userInfo:
@@ -121,7 +121,7 @@ def dealResNcc(auth_reps, Rs, Ru, PIDu, Hu):
         #  qi 卫星收到NCC返回数据 真正延时和 6+2 S  认证延时4+2
         clear_and_add(data)
         # m_lock.release()
-        time.sleep(1)
+        # time.sleep(1)
         # proxies = {'http': 'http://127.0.0.1:8080'}
         # reps = requests.post(url, data=data, proxies=proxies)
         # m_lock.acquire()

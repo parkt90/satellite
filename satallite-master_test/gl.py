@@ -35,9 +35,10 @@ storage=0
 
 # 处理全局变量conns
 def clear_and_add(data):
-    # if len(conns) != 0:
-        # del conns[0]
+    if len(conns) != 0:
+        del conns[0]
     conns.append(data)
+    time.sleep(1)
    
 
 # 处理全局变量sessions

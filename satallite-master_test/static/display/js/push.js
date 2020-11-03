@@ -3,7 +3,7 @@ $(document).ready(function () {
 
     socket.on('connect', function () {
         // socket.emit('table_event', { data: 'table' });
-        socket.emit('client_event', { data: 'client' });
+        socket.emit('client_event', { data:'' });
     })
 
     // socket.on('table_response', function (msg){

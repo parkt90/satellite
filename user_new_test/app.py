@@ -129,7 +129,7 @@ def reqAuth():
     data = getReqAuthData()
     # m_lock.release()
     # qi 第一次认证数据 110 行数据 延时和2秒
-    # clear_and_add(data)
+    clear_and_add(data)
     # 真正计算开始时间
     # m_lock.acquire()
     startTime = int(round(time.time() * 1000))
@@ -144,9 +144,9 @@ def reqAuth():
     data = json.loads(resp.content)
     data['authtime'] = authtime
     
-    # to = json.dumps(data)
+    to = json.dumps(data)
     # qi卫星返回给用户数据 真正延时和 10+2 S 认证延时6+2 （时间戳以及计算完毕了，不会随睡眠时间增加了.而且返回前数据以及打印出来了，所以显示比运行少2秒）
-    # clear_and_add(to)
+    clear_and_add(to)
     if data['ReqAuth'] == "500":
         global num
         num+=1
@@ -234,7 +234,7 @@ def getReqAuthtwiceData():
 
 # 用户向卫星发起二次认证请求
 def reqAuthtwice(data,Ru,sessionKey,MACKey):
-    # clear_and_add(data)
+    clear_and_add(data)
     startTime = int(time.time()*1000)
     # qi   用户准备好第二次认证数据，发起第二次认证 真正多余延时和 2 S  多余认证延时0
     # sessionId=data["sessionId"]
@@ -295,7 +295,7 @@ def reqAuthtwice(data,Ru,sessionKey,MACKey):
     add_session(new_sessionId, sessions)
     # del_session(sessionId)
     # # qi卫星返回给用户数据 真正延时和 6+2 S  认证延时4（时间戳以及计算完了，不会随睡眠时间增加了.而且返回前数据以及打印出来了，所以显示比运行少2秒）
-    # clear_and_add(to)
+    clear_and_add(to)
     print new_sessionId, sessionKey, sessionMACKey
     print "auth success..."
     return "1"
@@ -481,7 +481,7 @@ if __name__ == '__main__':
             app,
             host='0.0.0.0',#任何ip都可以访问
             # host='::',
-            port=9000,#端口
+            port=8888,#端口
             # debug=True
             )
     # while 1:
