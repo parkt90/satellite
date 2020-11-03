@@ -19,7 +19,7 @@ from imgCompress import imgCompress
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
 
-m_lock = threading.Lock()
+# m_lock = threading.Lock()
 # socketio = SocketIO(app)
 socketio = SocketIO(app, async_mode='threading')
 
@@ -125,7 +125,7 @@ def reqAuth():
     #print datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
     url = "http://127.0.0.1:2333/reqAuth"
     # proxies = {'http': 'http://192.0.2.30:8080'}
-    m_lock.acquire()
+    # m_lock.acquire()
     data = getReqAuthData()
     # m_lock.release()
     # qi 第一次认证数据 110 行数据 延时和2秒
@@ -133,9 +133,9 @@ def reqAuth():
     # 真正计算开始时间
     # m_lock.acquire()
     startTime = int(round(time.time() * 1000))
-    m_lock.release()
+    # m_lock.release()
     resp = requests.post(url, data=data)
-    m_lock.acquire()
+    # m_lock.acquire()
     endtime =  int(round(time.time() * 1000))
     authtime = endtime - startTime
     #print datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
@@ -151,7 +151,7 @@ def reqAuth():
         global num
         num+=1
         print "failed total...",num
-        m_lock.release()
+        # m_lock.release()
         return "0"
     else:
         
@@ -162,7 +162,7 @@ def reqAuth():
         # 对MAC进行验证
         with open("userInfo.json", "r") as userInfo:
             userInfo = json.load(userInfo)
-            # 终端设备计算MACSAT_key=h(IDu||K||ru)
+        # 终端设备计算MACSAT_key=h(IDu||K||ru)
         MAC_key = bytes(getHash(userInfo["userId"] + userInfo["userKey"] + ru))
         msg = "ReqUserSuccess" + secretHsat + secert_sessionId
         myMAC = getHmac(MAC_key,msg)
@@ -170,7 +170,7 @@ def reqAuth():
         # print myMAC
         if MAC != myMAC:
             print "failed..."
-            m_lock.release()
+            # m_lock.release()
             return "0"
 
         # 解开 secretHsat secretSessionId
@@ -197,7 +197,7 @@ def reqAuth():
         # print sessionId, sessionKey, sessionMACKey
         # qi
         # print "auth success..."
-        m_lock.release()
+        # m_lock.release()
         return "1"
 
 # 用户二次认证请求需要的所有数据
@@ -469,11 +469,11 @@ def userAuthtwice():
     return status
 
 if __name__ == '__main__':
-    reqAuth()
+    # reqAuth()
 ###############测试并发线程性能##############
-    for i in range(200):
-        cur=ReqAuth()
-        cur.start()
+    # for i in range(200):
+    #     cur=ReqAuth()
+    #     cur.start()
     # for i in range(50):
         # cur.join()
 ###########################################

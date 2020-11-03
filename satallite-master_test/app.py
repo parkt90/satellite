@@ -108,7 +108,7 @@ def success():
 # 卫星收到用户发来的认证信息，连同自己的认证信息一起发给ncc
 @app.route('/reqAuth', methods=['GET', 'POST'])
 def reqAuthFromUser():
-    m_lock.acquire()
+    # m_lock.acquire()
     # 这里要对用户信息做出判断
     if(request.data):
         userData = json.loads(request.data)
@@ -129,10 +129,10 @@ def reqAuthFromUser():
         userData['storage'] = get_sessions_storage() 
         # qi 卫星收到用户数据，并做初步判断 真正延时和 2+2 S 认证延时2
         clear_and_add(json.dumps(userData))
-        m_lock.release()
+        # m_lock.release()
         time.sleep(1)
         conns.clear
-        m_lock.acquire()
+        # m_lock.acquire()
         # 处理认证选项
         # qi 处理多线程时可能需要在这部分加锁
         try:
@@ -169,10 +169,10 @@ def reqAuthFromUser():
             data = json.dumps(data)
             #  qi 卫星收到用户数据，并做初步判断 真正延时和 8+2 S  认证延时6+2
             clear_and_add(data)
-            m_lock.release()
+            # m_lock.release()
             time.sleep(1)
             conns.clear
-            m_lock.acquire()
+            # m_lock.acquire()
             return data
         except Exception, e:
             print e
@@ -185,9 +185,9 @@ def reqAuthFromUser():
                 "storage" :storage
                 })
             clear_and_add(data)
-            m_lock.release()
+            # m_lock.release()
             time.sleep(1)
-            m_lock.acquire()
+            # m_lock.acquire()
             return Response(status=500, response=data)
     else:
         # m_lock.acquire()
