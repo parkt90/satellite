@@ -22,7 +22,7 @@ $(document).ready(function () {
 
             obj = JSON.parse(msg.data[0])
             // console.log(obj)
-
+            //simple1 用户消息   simple2 NCC消息
             var simple1 = document.getElementById('simple1');
             var simpleResult1 = document.getElementById('simpleResult1');
             var simple2 = document.getElementById('simple2');
@@ -44,46 +44,49 @@ $(document).ready(function () {
                 toTable = '<tr><td>' + user + '</td><td>' + time + '</td><td>' + status + '</td></tr>';
                 $('#table tbody').prepend(toTable);
                 showTable();
-                user2sata();
+                // user2sata();
                 // 接入用户总数加
                 updateUserCount(obj.conn_user, obj.succ_user);
                 // qi 更新内存
-                updateStorage(obj.storage);
+                // updateStorage(obj.storage);
             }
             else if (obj.userData) { //转发用户信息到ncc
                 var user = obj.userData.PIDu.substring(0, 5) + "****";
-                simple2.innerHTML = "<h3>" + time + "</h3><br>正在转发用户:<h3>" + user + "</h3>发起的身份认证请求\n";
-                simpleResult2.innerHTML = "<br><br>正在进行转发处理 </h6>";
+                simple1.innerHTML = "<h3>" + time + "</h3><br>正在转发用户:<h3>" + user + "</h3>认证请求\n";
+                simpleResult1.innerHTML = "<br><br>正在进行转发处理 </h6>";
 
                 $('#log').prepend('<br>' + $('<div/>').text('\n# ' + time + ' ---------- 转发用户请求到NCC：\n' + tmp).html());
 
                 var status = '转发NCC';
                 // 获取table中的该user行，并将status修改
                 changeTable(user, status);
-                sata2ncc();
+                // sata2ncc();
 
             }
 
             else if (obj.ReqAuth == "200") { //ncc回复卫星，用户认证成功
                 var user = obj.PIDu.substring(0, 5) + "****";
                 // simple.innerHTML = "正在向NCC请求用户\n" + obj.PIDu + "<br>的身份信息\n";
-                simple1.innerHTML = "<h3>" + time + "</h3><br>用户:<h3>" + user + "</h3><font color='#FF0000'>认证成功</font><br><br>正在向用户返回成功认证消息";
-                simpleResult1.innerHTML = "<br></h6>";
+                simple1.innerHTML = "<h3>" + time + "</h3><br>用户:<h3>" + user + "</h3><font color='#FF0000'>认证成功</font>\n"
+                simpleResult1.innerHTML = "";
+                simple2.innerHTML = "</h3>用户:<h3>" + user + "</h3>身份信息合法\n";
+                simpleResult2.innerHTML = "";
 
                 $('#log').prepend('<br>' + $('<div/>').text('\n# ' + time + ' ---------- 用户认证成功：\n' + tmp).html());
 
                 var status = '认证成功';
                 // 获取table中的该user行，并将status修改
                 changeTable(user, status);
-                ncc2sata();
+                // ncc2sata();
 
                 updateUserCountAndratio(obj.conn_user, obj.succ_user);
+                updateStorage(obj.storage);
             }
 
             else if (obj.ReqAuth == "ReqUserInfo") { //向ncc请求用户身份
                 var user = obj.PIDu.substring(0, 5) + "****";
-                simple2.innerHTML = "<h3>" + time + "</h3><br>正在向NCC请求用户:<h3>" + user + "</h3>的身份信息\n";
-                simpleResult2.innerHTML = "<br></h6>";
+                simple2.innerHTML = "<h3>" + time + "</h3><br>NCC收到用户:<h3>" + user + "</h3>请求信息\n";
+                simpleResult2.innerHTML = "<br>正在认证</h6>";
 
                 $('#log').prepend('<br>' + $('<div/>').text('\n# ' + time + ' ---------- 向NCC请求用户信息：\n' + tmp).html());
 
@@ -103,7 +106,7 @@ $(document).ready(function () {
                 var status = '认证失败';
                 // 获取table中的该user行，并将status修改
                 changeTable(user, status);
-                clearLine();
+                // clearLine();
 
                 updateUserCountAndratio(obj.conn_user, obj.succ_user);
             }
@@ -143,7 +146,7 @@ $(document).ready(function () {
                 simpleResult1.innerHTML = "</h6>";
 
                 $('#log').prepend('<br>' + $('<div/>').text('\n # ' + time + ' ---------- 用户请求二次认证：\n' + tmp).html());
-                user2sata();
+                 user2sata();
             }
             // 返回二次认证成功
             else if (obj.ResAuth == 'rspSecondAuth') {
@@ -161,7 +164,7 @@ $(document).ready(function () {
                 simpleResult1.innerHTML += '<img src="static/img/sate.png" alt="satallite" width="145" height="145">';
 
                 $('#log').prepend('<br>' + $('<div/>').text('\n # ' + time + ' ---------- 用户二次认证失败：\n' + tmp).html());
-                sata2user();
+                 sata2user();
             }
             setTimeout(function () {
                 clearLine();

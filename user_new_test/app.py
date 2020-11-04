@@ -66,7 +66,7 @@ def client_msg(msg):
     while 1:
         global conns
         emit('server_response', {'data': conns})
-        time.sleep(0.5)
+        time.sleep(1)
 
 @app.route('/register',methods=['GET','POST'])
 def register():
@@ -483,6 +483,7 @@ if __name__ == '__main__':
             # host='::',
             port=8888,#端口
             # debug=True
+            
             )
     # while 1:
     #    reqAuth()
