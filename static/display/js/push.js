@@ -48,7 +48,7 @@ $(document).ready(function () {
                 // 接入用户总数加
                 updateUserCount(obj.conn_user, obj.succ_user);
                 // qi 更新内存
-                updateStorage(obj.storage);
+                // updateStorage(obj.storage);
             }
             else if (obj.userData) { //转发用户信息到ncc
                 var user = obj.userData.PIDu.substring(0, 5) + "****";
@@ -78,6 +78,7 @@ $(document).ready(function () {
                 ncc2sata();
 
                 updateUserCountAndratio(obj.conn_user, obj.succ_user);
+                updateStorage(obj.storage);
             }
 
             else if (obj.ReqAuth == "ReqUserInfo") { //向ncc请求用户身份

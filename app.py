@@ -33,7 +33,7 @@ def client_msg(msg):
     while 1:
         global conns
         emit('server_response', {'data': conns})
-        time.sleep(0.5)
+        time.sleep(1)
     
 
 # 用户请求卫星图片
@@ -139,7 +139,7 @@ def reqAuthFromUser():
         userData['succ_user'] = succ_user
         #  qi增加占用内存信息
         # get_sessions_storage()
-        userData['storage'] = get_sessions_storage() 
+        # userData['storage'] = get_sessions_storage() 
         # qi 卫星收到用户数据，并做初步判断 真正延时和 2+2 S 认证延时2
         clear_and_add(json.dumps(userData))
         # 处理认证选项
@@ -173,7 +173,7 @@ def reqAuthFromUser():
             data['conn_user'] = conn_user
             data['succ_user'] = succ_user
             # get_sessions_storage()
-            userData['storage'] = get_sessions_storage()
+            data['storage'] = get_sessions_storage()
             data = json.dumps(data)
             #  qi 卫星收到用户数据，并做初步判断 真正延时和 8+2 S  认证延时6+2
             clear_and_add(data)
