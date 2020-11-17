@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from time import sleep
 from flask import Flask, jsonify, request, render_template, send_from_directory
 from flask_socketio import SocketIO, emit
 from flask_cors import *
@@ -7,6 +8,8 @@ import requests
 import webbrowser
 import os
 import threading
+
+from multiprocessing.dummy import Pool  as Pool
 
 from datetime import datetime
 from crypty_helper.xor import *
@@ -19,7 +22,7 @@ from imgCompress import imgCompress
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
 
-# m_lock = threading.Lock()
+m_lock = threading.Lock()
 # socketio = SocketIO(app)
 socketio = SocketIO(app, async_mode='threading')
 
@@ -129,7 +132,7 @@ def reqAuth():
     data = getReqAuthData()
     # m_lock.release()
     # qi 第一次认证数据 110 行数据 延时和2秒
-    clear_and_add(data)
+    # clear_and_add(data)
     # 真正计算开始时间
     # m_lock.acquire()
     startTime = int(round(time.time() * 1000))
@@ -146,13 +149,14 @@ def reqAuth():
     
     to = json.dumps(data)
     # qi卫星返回给用户数据 真正延时和 10+2 S 认证延时6+2 （时间戳以及计算完毕了，不会随睡眠时间增加了.而且返回前数据以及打印出来了，所以显示比运行少2秒）
-    clear_and_add(to)
+    # clear_and_add(to)
     if data['ReqAuth'] == "500":
         global num
         num+=1
         print "failed total...",num
         # m_lock.release()
-        return "0"
+        # return "0"
+        return
     else:
         
         secretHsat = data["secretHsat"]
@@ -171,7 +175,8 @@ def reqAuth():
         if MAC != myMAC:
             print "failed..."
             # m_lock.release()
-            return "0"
+            # return "0"
+            return
 
         # 解开 secretHsat secretSessionId
         with open("userInfo.json", "r") as userInfo:
@@ -198,7 +203,8 @@ def reqAuth():
         # qi
         # print "auth success..."
         # m_lock.release()
-        return "1"
+        # return "1"
+        return
 
 # 用户二次认证请求需要的所有数据
 @app.route('/userAuthtwice',methods=['GET','POST'])
@@ -435,7 +441,7 @@ def encryptData(data, key):
     elif options['Key_option'] == 2: # DES
         return des_encrypt(data, key)
     elif options['Key_option'] == 3: # 3DES
-        return three_des_encrypt(data, key)
+        return three_des_encrypt(data, keyuserAuth)
 
 def decryptData(data, key):
     options = get_options()
@@ -456,35 +462,75 @@ def authResult():
        "MACKey":sessions[sessionId]["sessionMACKey"]
    })
 
-@app.route('/userAuth', methods=['GET','POST'])
-@cross_origin()
-def userAuth():
-    status = reqAuth()
-    return status
+# @app.route('/userAuth', methods=['GET','POST'])
+# @cross_origin()
+# def userAuth():
+#     status = reqAuth()
+#     return status
 
-@app.route('/userAuthtwice', methods=['GET','POST'])
-@cross_origin()
-def userAuthtwice():
-    status = reqAuth()
-    return status
+# @app.route('/userAuthtwice', methods=['GET','POST'])
+# @cross_origin()
+# def userAuthtwice():
+#     status = reqAuth()
+#     return status
+
+class myThread (threading.Thread):   #继承父类threading.Thread
+    def __init__(self):
+        threading.Thread.__init__(self)
+    def run(self):                   #把要执行的代码写到run函数里面 线程在创建后会直接运行run函数 
+        try:
+            reqAuth()
+        except:
+            print "Error: unable to start thread"
 
 if __name__ == '__main__':
     # reqAuth()
 ###############测试并发线程性能##############
-    # for i in range(200):
-    #     cur=ReqAuth()
-    #     cur.start()
     # for i in range(50):
-        # cur.join()
+    #     for i in range(20):
+    #         cur=ReqAuth()
+    #         cur.start()
+    #     # for i in range(20):
+    #         cur.join()
+    #         time.sleep(0.5)
+    #     # time.sleep(1)
 ###########################################
-    socketio.run(
-            app,
-            host='0.0.0.0',#任何ip都可以访问
-            # host='::',
-            port=8888,#端口
-            # debug=True
+
+###############普通测试##############
+    for i in range(500):
+        reqAuth()
+        time.sleep(0.6)
+        
+###########################################
+
+
+
+###############多线程测试##############
+#     for i in range(30):
+#         for i in range(20):
+#             cur=myThread()
+#             cur.start()
+#         # for i in range(20):
+#             cur.join()
+#         time.sleep(1)
+# ###########################################
+    # my_pool = Pool(processes=10)
+    # for i in range(50):
+    #     my_pool.apply(reqAuth,args = (i, ))
+    # my_pool.close()
+    # my_pool.join() 
+    # time.sleep(1)
+
+    # for i in range(10):
+    #     reqAuth()
+    # socketio.run(
+    #         app,
+    #         host='0.0.0.0',#任何ip都可以访问
+    #         # host='::',
+    #         port=8888,#端口
+    #         # debug=True
             
-            )
+    #         )
     # while 1:
     #    reqAuth()
     #    time.sleep(3)

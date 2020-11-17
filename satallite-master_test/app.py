@@ -4,6 +4,8 @@ from flask_socketio import SocketIO, emit
 from flask_cors import CORS
 import json
 import webbrowser
+import copy
+
 
 from dealRequest import *
 from gl import *
@@ -13,8 +15,8 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 CORS(app, supports_credentials=True)
 
-socketio = SocketIO(app)
-# socketio = SocketIO(app, async_mode='threading')
+# socketio = SocketIO(app)
+socketio = SocketIO(app, async_mode='threading')
 
 @app.route('/')
 def index():
@@ -30,11 +32,23 @@ def show():
 def client_msg(msg):
     # emit('server_response', {'data': msg['data']})
     while 1:
-        global conns
-        emit('server_response', {'data': conns})
+        if len(conns):
+            # global flag
+            # flag==0
+            # time.sleep(0.001)
+            # data=[]
+        # global conns
+            # data=[]
+            data=copy.deepcopy(conns)
+            emit('server_response', {'data': data})
+            for i in range(len(data)):
+                # global conns
+                # if  bool(1-bool(conns)): 
+                conns.pop(0)
+            # flag==1
         time.sleep(0.5)
-    
-
+        # socketio.sleep(0.1)
+        
 # 用户请求卫星图片
 @app.route('/reqImg', methods=['GET', 'POST'])
 def reqImg():
@@ -128,7 +142,8 @@ def reqAuthFromUser():
         # get_sessions_storage()
         # userData['storage'] = get_sessions_storage() 
         # qi 卫星收到用户数据，并做初步判断 真正延时和 2+2 S 认证延时2
-        clear_and_add(json.dumps(userData))
+        # 暂时不用 clear_and_add(json.dumps(userData))
+        add(json.dumps(userData))
         # m_lock.release()
         # time.sleep(1)
         # conns.clear
@@ -168,7 +183,8 @@ def reqAuthFromUser():
             data['storage'] = get_sessions_storage()
             data = json.dumps(data)
             #  qi 卫星收到用户数据，并做初步判断 真正延时和 8+2 S  认证延时6+2
-            clear_and_add(data)
+            # clear_and_add(data)
+            add(data)
             # m_lock.release()
             # time.sleep(1)
             # conns.clear
@@ -184,7 +200,8 @@ def reqAuthFromUser():
                 "succ_user": succ_user,
                 "storage" :get_sessions_storage()
                 })
-            clear_and_add(data)
+            # clear_and_add(data)
+            add(data)
             # m_lock.release()
             # time.sleep(1)
             # m_lock.acquire()
@@ -225,5 +242,6 @@ if __name__ == "__main__":
         app,
         # debug=True,
         host='127.0.0.1',
-        port=2333
+        port=2333,
+
         )

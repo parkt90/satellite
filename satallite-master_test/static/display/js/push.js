@@ -11,16 +11,20 @@ $(document).ready(function () {
     // })
 
     var tmp = '';
-    var table = [];
+    var table = [];                                    
     socket.on('server_response', function (msg) {
         // console.log(msg);
-        if (msg.data.length != 0 && tmp != msg.data[0]) {
-            change_tmp(msg.data)
+        if (msg.data.length != 0){
+        for (var i=0;i<msg.data.length;i++){ 
+            
+        // if (tmp != msg.data[i]) {
+            // change_tmp(msg.data[i])
+            tmp=msg.data[i]
 
             // $('#log').append('<br>' + $('<div/>').text('Received #' + ': ' + msg.data).html());
             // $('#log').prepend('<br>' + $('<div/>').text('\n' + time +' #' + ': ' + tmp).html());
 
-            obj = JSON.parse(msg.data[0])
+            obj = JSON.parse(msg.data[i])
             // console.log(obj)
             //simple1 用户消息   simple2 NCC消息
             var simple1 = document.getElementById('simple1');
@@ -32,8 +36,8 @@ $(document).ready(function () {
 
             if (obj.Options) { //收到用户信息
                 var user = obj.PIDu.substring(0, 5) + "****";
-                simple1.innerHTML = "<h3>" + time + "</h3><br>接收到用户:<h3>" + user + "</h3>发起的身份认证请求\n";
-                simpleResult1.innerHTML = "<br><br>即将进行转发处理 </h6>";
+                // simple1.innerHTML = "<h3>" + time + "</h3><br>接收到用户:<h3>" + user + "</h3>发起的身份认证请求\n";
+                // simpleResult1.innerHTML = "<br><br>即将进行转发处理 </h6>";
 
                 $('#log').prepend('<br>' + $('<div/>').text('\n# ' + time + ' ---------- 接收到用户请求：\n' + tmp).html());
 
@@ -52,8 +56,8 @@ $(document).ready(function () {
             }
             else if (obj.userData) { //转发用户信息到ncc
                 var user = obj.userData.PIDu.substring(0, 5) + "****";
-                simple1.innerHTML = "<h3>" + time + "</h3><br>正在转发用户:<h3>" + user + "</h3>认证请求\n";
-                simpleResult1.innerHTML = "<br><br>正在进行转发处理 </h6>";
+                // simple1.innerHTML = "<h3>" + time + "</h3><br>正在转发用户:<h3>" + user + "</h3>认证请求\n";
+                // simpleResult1.innerHTML = "<br><br>正在进行转发处理 </h6>";
 
                 $('#log').prepend('<br>' + $('<div/>').text('\n# ' + time + ' ---------- 转发用户请求到NCC：\n' + tmp).html());
 
@@ -67,10 +71,10 @@ $(document).ready(function () {
             else if (obj.ReqAuth == "200") { //ncc回复卫星，用户认证成功
                 var user = obj.PIDu.substring(0, 5) + "****";
                 // simple.innerHTML = "正在向NCC请求用户\n" + obj.PIDu + "<br>的身份信息\n";
-                simple1.innerHTML = "<h3>" + time + "</h3><br>用户:<h3>" + user + "</h3><font color='#FF0000'>认证成功</font>\n"
-                simpleResult1.innerHTML = "";
-                simple2.innerHTML = "</h3>用户:<h3>" + user + "</h3>身份信息合法\n";
-                simpleResult2.innerHTML = "";
+                // simple1.innerHTML = "<h3>" + time + "</h3><br>用户:<h3>" + user + "</h3><font color='#FF0000'>认证成功</font>\n"
+                // simpleResult1.innerHTML = "";
+                // simple2.innerHTML = "</h3>用户:<h3>" + user + "</h3>身份信息合法\n";
+                // simpleResult2.innerHTML = "";
 
                 $('#log').prepend('<br>' + $('<div/>').text('\n# ' + time + ' ---------- 用户认证成功：\n' + tmp).html());
 
@@ -85,8 +89,8 @@ $(document).ready(function () {
 
             else if (obj.ReqAuth == "ReqUserInfo") { //向ncc请求用户身份
                 var user = obj.PIDu.substring(0, 5) + "****";
-                simple2.innerHTML = "<h3>" + time + "</h3><br>NCC收到用户:<h3>" + user + "</h3>请求信息\n";
-                simpleResult2.innerHTML = "<br>正在认证</h6>";
+                // simple2.innerHTML = "<h3>" + time + "</h3><br>NCC收到用户:<h3>" + user + "</h3>请求信息\n";
+                // simpleResult2.innerHTML = "<br>正在认证</h6>";
 
                 $('#log').prepend('<br>' + $('<div/>').text('\n# ' + time + ' ---------- 向NCC请求用户信息：\n' + tmp).html());
 
@@ -98,8 +102,8 @@ $(document).ready(function () {
             //错误处理
             else if (obj.ReqAuth == "500") { //用户认证失败
                 var user = obj.PIDu.substring(0, 5) + "****";
-                simple1.innerHTML = "<h3>" + time + "</h3><br>用户:<h3>" + user + "</h3><font color='#FF0000'>认证失败</font>";
-                simpleResult1.innerHTML = "</h6>";
+                // simple1.innerHTML = "<h3>" + time + "</h3><br>用户:<h3>" + user + "</h3><font color='#FF0000'>认证失败</font>";
+                // simpleResult1.innerHTML = "</h6>";
 
                 $('#log').prepend('<br>' + $('<div/>').text('\n # ' + time + ' ---------- 用户认证失败：\n' + tmp).html());
 
@@ -166,9 +170,13 @@ $(document).ready(function () {
                 $('#log').prepend('<br>' + $('<div/>').text('\n # ' + time + ' ---------- 用户二次认证失败：\n' + tmp).html());
                  sata2user();
             }
+  
+
             setTimeout(function () {
                 clearLine();
             }, 5000)  
+        // }
+        }
         }
     });
     function fnDate() {

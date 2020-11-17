@@ -19,6 +19,7 @@ sessions = {}
 # sessions = {"123": {"time": 1562827835, "IDu": "ff4b43ede3bfdaa52ea7f97593f8897fd9a41645", "sessionKey": "07b12e43db2ab22e9ba74afda5b29d5c3496495ca49b786b3bfbe180ee896d2f", "Ku": "124640bf2792a0cdce2c04e13326d67bf013bac6ce546616b04888e7c4e68631", "sessionMACKey": "d9186f2e39f03f94946af0ecc4076201ad9dd56552d79bdc42ba3a06209f32d0"}}
 
 conns = []
+# flag=1
 
 options = {
     'Hash_option': 2,
@@ -39,7 +40,16 @@ def clear_and_add(data):
         del conns[0]
     conns.append(data)
     time.sleep(1)
-   
+# qi 测试函数
+# 处理全局变量conns
+def add(data):
+    # global flag
+    # while(flag==0):
+    #     time.sleep(0.005)
+    #     global flag
+    conns.append(data)
+        
+
 
 # 处理全局变量sessions
 def add_session(key, value):
