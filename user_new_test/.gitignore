@@ -19,6 +19,8 @@ __pycache__
 
 # Installer logs
 pip-log.txt
+time.txt
+data.txt
 
 # Unit test / coverage reports
 .coverage
@@ -41,4 +43,4 @@ venv
 
 .vscode/
 #temp vale
-.json
+userInfo.json
