@@ -41,4 +41,4 @@ venv
 
 .vscode/
 #temp vale
-.json
+userInfo.json
