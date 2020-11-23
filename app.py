@@ -103,7 +103,7 @@ def identityCheck():
                     'Code':"1",
                     'status':"MAC error"
                 }), 500
-            
+            # test
             retData = retSatallite(masterKey)
             return json.dumps(retData)
         except Exception, e:
