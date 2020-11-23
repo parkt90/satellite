@@ -32,7 +32,7 @@ def authCheck(userData, satalliteData):
 
     # 验证timestamp
     if is_timeout(Ts):
-        raise Exception('timeout')
+        raise Exception('timeout1')
 
     # 计算出IDu、IDs
     IDu = xor_decrypt(PIDu, Hu) 
