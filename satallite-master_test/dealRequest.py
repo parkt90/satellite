@@ -65,7 +65,18 @@ def sendToNcc(satalliteData, userData):
     })
     #  qi 卫星收到用户数据，连同自己数据一起发给NCC 真正延时和 4+2 S  认证延时2+2
     # clear_and_add(data)
-    add(data)
+    # tmp_data={
+    #     "ReqAuth":"ReqAuth",
+    #     "userData":userData,
+    #     "satalliteData":satalliteData
+    # }
+    # change(str(tmp_data))
+    # try:
+    #     t4 =threading.Thread(target=add)
+    #     t4.start()
+    #     t4.join()
+    # except:print "Error: unable to start thread t4"
+    # add(data)
     # m_lock.release()
     # time.sleep(1)
     # 读取卫星信息
@@ -119,9 +130,22 @@ def dealResNcc(auth_reps, Rs, Ru, PIDu, Hu):
             "Hu": Hu,
             "MAC":str(MAC)
         })
-        #  qi 卫星收到NCC返回数据 真正延时和 6+2 S  认证延时4+2
-        # clear_and_add(data)
-        add(data)
+        # temp_data={
+        #     "ReqAuth":"ReqUserInfo",
+        #     "Ts":str(timestamp),
+        #     "PIDu":PIDu,
+        #     "Hu": Hu,
+        #     "MAC":str(MAC)
+        # }
+        # #  qi 卫星收到NCC返回数据 真正延时和 6+2 S  认证延时4+2
+        # # clear_and_add(data)
+        # change(str(temp_data))
+        # try:
+        #     t5 =threading.Thread(target=add)
+        #     t5.start()
+        #     t5.join()
+        # except:print "Error: unable to start thread t5"
+        # add(data)
         # m_lock.release()
         # time.sleep(1)
         # proxies = {'http': 'http://127.0.0.1:8080'}

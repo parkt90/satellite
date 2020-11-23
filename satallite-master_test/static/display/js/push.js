@@ -1,23 +1,32 @@
 $(document).ready(function () {
-    var socket = io.connect();
+    // var socket = io.connect();
+    // socket.on('connect', function () {
+    //     // socket.emit('table_event', { data: 'table' });
+    //     socket.emit('client_event', { data:'' });
+    // })
 
-    socket.on('connect', function () {
-        // socket.emit('table_event', { data: 'table' });
-        socket.emit('client_event', { data:'' });
-    })
 
     // socket.on('table_response', function (msg){
     // 	console.log(msg);
     // })
-
+    namespace='/test_conn'
+    var socket = io.connect('ws://127.0.0.1:2333/test_conn');
     var tmp = '';
-    var table = [];                                    
+    var table = [];     
+    var num=0;  
+    var data_len=0;
+    // console.log(1)                            
     socket.on('server_response', function (msg) {
-        // console.log(msg);
+        //  console.log(msg.data);
         if (msg.data.length != 0){
-        for (var i=0;i<msg.data.length;i++){ 
-            
-        // if (tmp != msg.data[i]) {
+            data_len+=msg.data.length;
+            console.log(data_len);
+            // len+=msg.data.length;
+            // console.log(len)
+            // localStorage.setItem("len",len.toString());
+        for (var i=0;i<msg.data.length && Object.keys(msg.data[i]).length != 0 ;i++){ 
+            // console.log( Object.prototype.toString.call(msg.data[i])) 
+            //  if ( Object.keys(msg.data[i]).length != 0) {
             // change_tmp(msg.data[i])
             tmp=msg.data[i]
 
@@ -25,12 +34,14 @@ $(document).ready(function () {
             // $('#log').prepend('<br>' + $('<div/>').text('\n' + time +' #' + ': ' + tmp).html());
 
             obj = JSON.parse(msg.data[i])
+            // len+=obj.length;
+            // console.log(len)
             // console.log(obj)
             //simple1 用户消息   simple2 NCC消息
-            var simple1 = document.getElementById('simple1');
-            var simpleResult1 = document.getElementById('simpleResult1');
-            var simple2 = document.getElementById('simple2');
-            var simpleResult2 = document.getElementById('simpleResult2');
+            // var simple1 = document.getElementById('simple1');
+            // var simpleResult1 = document.getElementById('simpleResult1');
+            // var simple2 = document.getElementById('simple2');
+            // var simpleResult2 = document.getElementById('simpleResult2');
 
             time = fnDate();
 
@@ -40,6 +51,8 @@ $(document).ready(function () {
                 // simpleResult1.innerHTML = "<br><br>即将进行转发处理 </h6>";
 
                 $('#log').prepend('<br>' + $('<div/>').text('\n# ' + time + ' ---------- 接收到用户请求：\n' + tmp).html());
+               
+               
 
                 // setTable(user);
                 // console.log(table);
@@ -51,10 +64,11 @@ $(document).ready(function () {
                 // user2sata();
                 // 接入用户总数加
                 updateUserCount(obj.conn_user, obj.succ_user);
+                // continue;
                 // qi 更新内存
                 // updateStorage(obj.storage);
             }
-            else if (obj.userData) { //转发用户信息到ncc
+         /*    else if (obj.userData) { //转发用户信息到ncc
                 var user = obj.userData.PIDu.substring(0, 5) + "****";
                 // simple1.innerHTML = "<h3>" + time + "</h3><br>正在转发用户:<h3>" + user + "</h3>认证请求\n";
                 // simpleResult1.innerHTML = "<br><br>正在进行转发处理 </h6>";
@@ -64,9 +78,10 @@ $(document).ready(function () {
                 var status = '转发NCC';
                 // 获取table中的该user行，并将status修改
                 changeTable(user, status);
+                continue;
                 // sata2ncc();
 
-            }
+            } */
 
             else if (obj.ReqAuth == "200") { //ncc回复卫星，用户认证成功
                 var user = obj.PIDu.substring(0, 5) + "****";
@@ -75,9 +90,17 @@ $(document).ready(function () {
                 // simpleResult1.innerHTML = "";
                 // simple2.innerHTML = "</h3>用户:<h3>" + user + "</h3>身份信息合法\n";
                 // simpleResult2.innerHTML = "";
+            //    if( $('#log').val.length=0) { $('#log').append('<br>' + $('<div/>').text('\n# ' + time + ' ---------- 用户认证成功：\n' + tmp).html());}
+               $('#log').prepend('<br>' + $('<div/>').text('\n# ' + time + ' ---------- 用户认证成功：\n' + tmp).html());
 
-                $('#log').prepend('<br>' + $('<div/>').text('\n# ' + time + ' ---------- 用户认证成功：\n' + tmp).html());
-
+                num++;
+                // console.log(num)
+                if (num>500) {
+                      $("#log").empty() ; 
+                      num=0;  
+                    // document.getElementById("log").value="";     
+                }
+               
                 var status = '认证成功';
                 // 获取table中的该user行，并将status修改
                 changeTable(user, status);
@@ -85,9 +108,10 @@ $(document).ready(function () {
 
                 updateUserCountAndratio(obj.conn_user, obj.succ_user);
                 updateStorage(obj.storage);
+                // continue;
             }
 
-            else if (obj.ReqAuth == "ReqUserInfo") { //向ncc请求用户身份
+           /*  else if (obj.ReqAuth == "ReqUserInfo") { //向ncc请求用户身份
                 var user = obj.PIDu.substring(0, 5) + "****";
                 // simple2.innerHTML = "<h3>" + time + "</h3><br>NCC收到用户:<h3>" + user + "</h3>请求信息\n";
                 // simpleResult2.innerHTML = "<br>正在认证</h6>";
@@ -97,22 +121,29 @@ $(document).ready(function () {
                 var status = '请求用户';
                 // 获取table中的该user行，并将status修改
                 changeTable(user, status);
-            }
+                continue;
+            } */
 
             //错误处理
             else if (obj.ReqAuth == "500") { //用户认证失败
                 var user = obj.PIDu.substring(0, 5) + "****";
                 // simple1.innerHTML = "<h3>" + time + "</h3><br>用户:<h3>" + user + "</h3><font color='#FF0000'>认证失败</font>";
                 // simpleResult1.innerHTML = "</h6>";
-
                 $('#log').prepend('<br>' + $('<div/>').text('\n # ' + time + ' ---------- 用户认证失败：\n' + tmp).html());
-
+                num++;
+                // console.log(num)
+                if (num>500) {
+                      $("#log").empty()  ;  
+                      num=0; 
+                    // document.getElementById("log").value="";     
+                }
                 var status = '认证失败';
                 // 获取table中的该user行，并将status修改
                 changeTable(user, status);
                 // clearLine();
 
                 updateUserCountAndratio(obj.conn_user, obj.succ_user);
+                // continue;
             }
 
             // 用户发起图片请求
@@ -172,12 +203,13 @@ $(document).ready(function () {
             }
   
 
-            setTimeout(function () {
-                clearLine();
-            }, 5000)  
+            // setTimeout(function () {
+            //     clearLine();
+            // }, 5000)  
         // }
         }
-        }
+         }
+    
     });
     function fnDate() {
         var date = new Date();
@@ -219,7 +251,7 @@ $(document).ready(function () {
         $("#table tr td:nth-child(1)").each(function () {
             // console.log($(this).text());
             if (user == $(this).text()) {
-                v = $("#table tr:gt(0):eq(" + key + ") td:eq(2)").text();
+                // v = $("#table tr:gt(0):eq(" + key + ") td:eq(2)").text();
                 // console.log(v);
                 // 改变status
                 $("#table tr:gt(0):eq(" + key + ") td:eq(2)").text(status);
@@ -227,6 +259,7 @@ $(document).ready(function () {
             key += 1;
         });
     }
+    
 
 });
 
@@ -237,8 +270,8 @@ function showTable() {
     if (rows > 7) {
         //如果规定显示行号，请用下面代码
         var showNumber = new Array(1, 2, 3, 4, 5, 6, 7);
-
-        $("#table tr").hide();
+        $('#table tr').eq(8).remove();
+        // $("#table tr").hide();
         for (i = 0; i < showNumber.length; i++) {
             $("#table tr:eq(" + showNumber[i] + ")").show();
         }

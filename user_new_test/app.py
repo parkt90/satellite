@@ -141,6 +141,9 @@ def reqAuth():
     # m_lock.acquire()
     endtime =  int(round(time.time() * 1000))
     authtime = endtime - startTime
+    temp_time=authtime
+    with open("time.txt", "a+") as f:
+        f.write(str(temp_time)+'\n')
     #print datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
     # m_lock.acquire()
     ru = json.loads(data)["Ru"]
@@ -462,11 +465,11 @@ def authResult():
        "MACKey":sessions[sessionId]["sessionMACKey"]
    })
 
-# @app.route('/userAuth', methods=['GET','POST'])
-# @cross_origin()
-# def userAuth():
-#     status = reqAuth()
-#     return status
+@app.route('/userAuth', methods=['GET','POST'])
+@cross_origin()
+def userAuth():
+    status = reqAuth()
+    return status
 
 # @app.route('/userAuthtwice', methods=['GET','POST'])
 # @cross_origin()
@@ -486,33 +489,32 @@ class myThread (threading.Thread):   #继承父类threading.Thread
 if __name__ == '__main__':
     # reqAuth()
 ###############测试并发线程性能##############
-    # for i in range(50):
-    #     for i in range(20):
-    #         cur=ReqAuth()
-    #         cur.start()
-    #     # for i in range(20):
-    #         cur.join()
-    #         time.sleep(0.5)
-    #     # time.sleep(1)
+    for i in range(1000):
+        for i in range(100):
+            cur=ReqAuth()
+            cur.start()
+        # for i in range(20):
+            cur.join()
+            time.sleep(0.025)
+        # time.sleep(1)
 ###########################################
 
 ###############普通测试##############
-    for i in range(500):
-        reqAuth()
-        time.sleep(0.6)
+    # for i in range(2000):
+    #     reqAuth()
+    #     time.sleep(0.1)
         
 ###########################################
 
 
 
 ###############多线程测试##############
-#     for i in range(30):
-#         for i in range(20):
-#             cur=myThread()
-#             cur.start()
-#         # for i in range(20):
-#             cur.join()
-#         time.sleep(1)
+    # for i in range(80):
+    #     for i in range(25):
+    #         cur=myThread()
+    #         cur.start()
+    #         cur.join()
+    #     time.sleep(1)
 # ###########################################
     # my_pool = Pool(processes=10)
     # for i in range(50):

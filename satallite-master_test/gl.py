@@ -3,21 +3,27 @@
 # author : b1ng0
 import time
 import threading
+import copy
+import json
+import collections
 # 奇 
 import sys
+from Queue import Queue
 from flask.globals import g
 from pympler import asizeof
-m_lock = threading.Lock()
+socketio_msg_queue = Queue(maxsize=50000)
+# m_lock = threading.Lock()
 # 设置ip地址
 ncc_ip = '127.0.0.1'
 user_ip = '127.0.0.1'
 
 # 奇 有序字典 后面考虑会用到
-m_lock = threading.Lock()
-# dic= collections.OrderedDict()
-sessions = {}
-# sessions = {"123": {"time": 1562827835, "IDu": "ff4b43ede3bfdaa52ea7f97593f8897fd9a41645", "sessionKey": "07b12e43db2ab22e9ba74afda5b29d5c3496495ca49b786b3bfbe180ee896d2f", "Ku": "124640bf2792a0cdce2c04e13326d67bf013bac6ce546616b04888e7c4e68631", "sessionMACKey": "d9186f2e39f03f94946af0ecc4076201ad9dd56552d79bdc42ba3a06209f32d0"}}
-
+r = threading.RLock()
+# t1 = threading.Thread(target=add)
+sessions= collections.OrderedDict()
+# sessions = {}
+sessions = {"123": {"time": 1562827835, "IDu": "ff4b43ede3bfdaa52ea7f97593f8897fd9a41645", "sessionKey": "07b12e43db2ab22e9ba74afda5b29d5c3496495ca49b786b3bfbe180ee896d2f", "Ku": "124640bf2792a0cdce2c04e13326d67bf013bac6ce546616b04888e7c4e68631", "sessionMACKey": "d9186f2e39f03f94946af0ecc4076201ad9dd56552d79bdc42ba3a06209f32d0"}}
+tmp=''
 conns = []
 # flag=1
 
@@ -33,7 +39,7 @@ conn_user = 0
 succ_user = 0
 # 奇 占用内存
 storage=0
-
+num=0
 # 处理全局变量conns
 def clear_and_add(data):
     if len(conns) != 0:
@@ -42,12 +48,33 @@ def clear_and_add(data):
     time.sleep(1)
 # qi 测试函数
 # 处理全局变量conns
-def add(data):
+def add():
+    r.acquire(0.01)
     # global flag
     # while(flag==0):
     #     time.sleep(0.005)
     #     global flag
+    # print data
+    data=eval(tmp)
+    # socketio_msg_queue.put(data)
+    data=json.dumps(eval(tmp))
     conns.append(data)
+    r.release()
+    # time.sleep(0.1)
+
+def change(data):
+    global tmp
+    tmp=''
+    tmp= data
+    # tmp1=json.dumps(tmp)
+    # return json.dumps(tmp)
+# def remove(conns):
+#         r.acquire()
+#         # print 1
+#         # for i in range(len(conns)):
+#         #     conns.pop(0)
+#         conns[:]=[]
+#         r.release()
         
 
 
@@ -59,12 +86,25 @@ def get_sessions():
     return sessions
 # 奇 get sessions 占用内存 bytes
 def get_sessions_storage():
-    # storage=round(float(asizeof.asizeof(sessions)-272)/(1024*1024),2)
-    temp=round(float(asizeof.asizeof(sessions))/(1024*1024),2)
-    global storage
-    storage=storage if  storage>temp else temp
+    # temp=round(float(asizeof.asizeof(sessions))/(1024*1024),2)
+    # global storage
+    # storage=storage if  storage>temp else temp
+
+    # 导出存贮容量数据
+    # global num
+    # num+=1
+    # if num % 200==0:
+    #     temp_memory=round(float(asizeof.asizeof(sessions))/(1024),2)
+    #     with open("data.txt", "a+") as f:
+    #         f.write(str(temp_memory)+'\n')
     # print storage;
-    return storage
+    # temp=round(float(asizeof.asizeof(sessions.items(-1)))/(1024*1024),2)
+    temp_stor=asizeof.asizeof(sessions.items()[-1])
+    global storage
+    storage+=temp_stor
+    storage1=round(float(storage)/(1024*1024),2)
+    # storage=storage1 if  storage>temp_stor else temp_stor
+    return storage1
 
 def get_sessionkey(key):
     return sessions.get(key)

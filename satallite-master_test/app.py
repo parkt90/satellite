@@ -1,22 +1,35 @@
 # -*- coding:utf-8 -*-
+# from threading import Event
+import eventlet
+eventlet.monkey_patch()
 from flask import Flask, jsonify, request, render_template, Response, send_from_directory, abort
 from flask_socketio import SocketIO, emit
 from flask_cors import CORS
 import json
 import webbrowser
 import copy
+# import queue
+
+from threading import RLock
+
+
 
 
 from dealRequest import *
 from gl import *
-
-m_lock = threading.Lock()
+# m_lock = threading.Lock()
+eventlet.monkey_patch()
+# data_temp=[]
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 CORS(app, supports_credentials=True)
 
+thread_lock = RLock()
+thread = None
+
 # socketio = SocketIO(app)
-socketio = SocketIO(app, async_mode='threading')
+socketio = SocketIO(app)
+
 
 @app.route('/')
 def index():
@@ -28,33 +41,81 @@ def show():
     return app.send_static_file('show.html')
 
 
-@socketio.on('client_event')
-def client_msg(msg):
-    # emit('server_response', {'data': msg['data']})
-    while 1:
-        if len(conns):
-            # global flag
-            # flag==0
-            # time.sleep(0.001)
-            # data=[]
-        # global conns
-            # data=[]
-            data=copy.deepcopy(conns)
-            emit('server_response', {'data': data})
-            for i in range(len(data)):
-                # global conns
-                # if  bool(1-bool(conns)): 
-                conns.pop(0)
-            # flag==1
-        time.sleep(0.5)
-        # socketio.sleep(0.1)
+# @socketio.on('client_event')
+# def client_msg(msg):
+#     # emit('server_response', {'data': msg['data']})
+#     while 1:
+#         try:
+#             socketio.emit('server_response', {'data':data_temp})
+#             t2=threading.Thread(target=remove,kwargs={"conns": conns, "data_temp": data_temp})
+#             t2.start()
+#             t2.join()
+            
+#             # time.sleep(0.1)
+#             eventlet.sleep(0.9)
+#         except:
+#             print "Error: unable to start thread t2"
         
+        # t2.join()
+        # if len(conns):
+        #     # global flag
+        #     # flag==0
+        #     # time.sleep(0.001)
+        #     # data=[]
+        # # global conns
+        #     # data=[]
+        #     data=copy.deepcopy(conns)
+        #     emit('server_response', {'data': data})
+        #     for i in range(len(data)):
+        #         # global conns
+        #         # if  bool(1-bool(conns)): 
+        #         conns.pop(0)
+        # # flag==1
+        # time.sleep(0.5)
+        # eventlet.sleep(0.2)
+# def remove(conns,data_temp):
+#         r.acquire()
+#         data_temp[:]=[]
+#         for i in conns:
+#             data_temp.append(i) 
+#         # socketio.emit('server_response', {'data':data_temp})
+#         conns[:]=[]
+#         r.release()
+
+        # time.sleep(0.5)
+        # socketio.sleep(0.5)
+@socketio.on('connect', namespace='/test_conn')
+def test_connect():
+    global thread
+    with thread_lock:
+        if thread is None:
+            thread = socketio.start_background_task(target=background_thread)
+
+def background_thread():
+    eventlet.spawn_n(gtask_socketio_emit)
+
+def gtask_socketio_emit():
+    while True:
+        with thread_lock:
+            socketio.emit('server_response', {'data': conns},namespace='/test_conn') 
+            conns[:]=[]
+        eventlet.sleep(2)
+        # eventlet.sleep(0.3)
+        # while(socketio_msg_queue.qsize>0):
+        #  msg = socketio_msg_queue.get()
+        #  socketio.emit('server_response', {'data':json.dumps(msg)},namespace='/test_conn')
+# while True:
+    #     with thread_lock:
+    #         socketio.emit('server_response', {'data': conns},namespace='/test_conn') 
+    #         conns[:]=[]
+    #         eventlet.sleep(0.1)
+
+
 # 用户请求卫星图片
 @app.route('/reqImg', methods=['GET', 'POST'])
 def reqImg():
     if(request.data):
         sessionId = json.loads(request.data)["sessionId"]
-
         sessions = get_sessions()
         try:
             session_data = sessions[sessionId]
@@ -122,6 +183,7 @@ def success():
 # 卫星收到用户发来的认证信息，连同自己的认证信息一起发给ncc
 @app.route('/reqAuth', methods=['GET', 'POST'])
 def reqAuthFromUser():
+    startTime = int(time.time()*1000)
     # m_lock.acquire()
     # 这里要对用户信息做出判断
     if(request.data):
@@ -136,14 +198,31 @@ def reqAuthFromUser():
         # 奇 
         global storage
         conn_user += 1
-        userData['conn_user'] = conn_user
-        userData['succ_user'] = succ_user
+        # userData['conn_user'] = conn_user
+        # userData['succ_user'] = succ_user
+        # change(str(userData))
+        temp_data={
+            "conn_user":conn_user,
+            "succ_user": succ_user,
+            "MACu": userData['MACu'],
+            "PIDu":userData['PIDu'],
+            "Options":userData['Options'] 
+        }
+        change(str(temp_data))
+        # change(userData)
         #  qi增加占用内存信息
         # get_sessions_storage()
         # userData['storage'] = get_sessions_storage() 
         # qi 卫星收到用户数据，并做初步判断 真正延时和 2+2 S 认证延时2
         # 暂时不用 clear_and_add(json.dumps(userData))
-        add(json.dumps(userData))
+        try:
+           t1 =threading.Thread(target=add)
+           t1.start()
+           t1.join()
+        except:
+            print "Error: unable to start thread t1"
+        
+        # add(json.dumps(userData))
         # m_lock.release()
         # time.sleep(1)
         # conns.clear
@@ -177,14 +256,27 @@ def reqAuthFromUser():
             # 统计成功信息
             # m_lock.acquire()
             succ_user += 1
-            data['conn_user'] = conn_user
-            data['succ_user'] = succ_user
-            # get_sessions_storage()
-            data['storage'] = get_sessions_storage()
-            data = json.dumps(data)
+            # data['conn_user'] = conn_user
+            # data['succ_user'] = succ_user
+            # data['storage'] = get_sessions_storage()
+            # data = json.dumps(data)
             #  qi 卫星收到用户数据，并做初步判断 真正延时和 8+2 S  认证延时6+2
             # clear_and_add(data)
-            add(data)
+            
+            temp_data1={
+                "conn_user":conn_user,
+                "succ_user": succ_user,
+                "storage":get_sessions_storage(),
+                "PIDu":data['PIDu'],
+                "ReqAuth":data['ReqAuth'],
+                "authtime" : str(int(round(time.time() * 1000))-startTime)+"ms"
+
+            }
+            change(str(temp_data1))
+            t3 =threading.Thread(target=add)
+            t3.start()
+            t3.join()
+            # add(data)
             # m_lock.release()
             # time.sleep(1)
             # conns.clear
@@ -193,14 +285,26 @@ def reqAuthFromUser():
         except Exception, e:
             print e
             # m_lock.acquire()
+            # data = json.dumps({
+            #     "ReqAuth":"500",
+            #     "PIDu":userData["PIDu"],
+            #     "conn_user": conn_user,
+            #     "succ_user": succ_user,
+            #     "storage" :get_sessions_storage()
+            #     })
             data = json.dumps({
                 "ReqAuth":"500",
                 "PIDu":userData["PIDu"],
                 "conn_user": conn_user,
                 "succ_user": succ_user,
-                "storage" :get_sessions_storage()
-                })
+                "storage" :get_sessions_storage(),
+                "authtime" : str(int(round(time.time() * 1000))-startTime)+"ms"
+            })
             # clear_and_add(data)
+            change(str(data))
+            t6 =threading.Thread(target=add)
+            t6.start()
+            t6.join()
             add(data)
             # m_lock.release()
             # time.sleep(1)
