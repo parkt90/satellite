@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
+import eventlet
+eventlet.monkey_patch()
 from time import sleep
-from flask import Flask, jsonify, request, render_template, send_from_directory
-from flask_socketio import SocketIO, emit
+from flask import Flask, jsonify, request, render_template, send_from_directory,session
+from flask_socketio import SocketIO, emit,join_room, leave_room,close_room, rooms
 from flask_cors import *
 import json, hashlib, random, time, hmac
 import requests
 import webbrowser
 import os
-import threading
+import threading 
+from datetime import timedelta
 
 from multiprocessing.dummy import Pool  as Pool
 
@@ -20,26 +23,29 @@ from gl import *
 from imgCompress import imgCompress
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'secret-password!'
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
 CORS(app, supports_credentials=True)
-
-m_lock = threading.Lock()
+# m_lock = threading.Lock()
 # socketio = SocketIO(app)
-socketio = SocketIO(app, async_mode='threading')
 
-#####################多线程并发设置#######################
-maxs=20  ##并发的线程数量
-threadLimiter=threading.BoundedSemaphore(maxs)
-class ReqAuth(threading.Thread):
-    def __init__(self):
-        threading.Thread.__init__(self)
-    def run(self):
-        threadLimiter.acquire()  #获取 qi 这里相当于把线程加了锁
-        try:
-            reqAuth()
-        except:
-            print "Error: unable to start thread"
-        finally:
-            threadLimiter.release() #释放 这里是把线程锁解开
+thread = None
+socketio = SocketIO(app)
+
+# #####################多线程并发设置#######################
+# maxs=20  ##并发的线程数量
+# threadLimiter=threading.BoundedSemaphore(maxs)
+# class ReqAuth(threading.Thread):
+#     def __init__(self):
+#         threading.Thread.__init__(self)
+#     def run(self):
+#         threadLimiter.acquire()  #获取 qi 这里相当于把线程加了锁
+#         try:
+#             reqAuth()
+#         except:
+#             print "Error: unable to start thread"
+#         finally:
+#             threadLimiter.release() #释放 这里是把线程锁解开
 ########################################################
 
 @app.route('/options',methods=['GET','POST'])
@@ -63,13 +69,50 @@ def list():
 def index():
     return render_template('display.html')
 
-@socketio.on('client_event')
-def client_msg(msg):
-    #emit('server_response', {'data': msg['data']})
-    while 1:
-        global conns
-        emit('server_response', {'data': conns})
-        time.sleep(1)
+# """ @socketio.on('client_event')
+# def client_msg(msg):
+#     #emit('server_response', {'data': msg['data']})
+#     while 1:
+#         global conns
+#         emit('server_response', {'data': conns})
+#         time.sleep(1)
+#  """
+@socketio.on('connect', namespace='/test_conn')
+def mtest_connect():
+    emit('connect_response', {'data':"connect"})
+
+@socketio.on('client_event', namespace='/test_conn')
+def test_connect(msg):
+    
+    # global thread
+    # with thread_lock:
+    #     global thread
+    # if thread is not  None:
+        # room=msg['data']
+        thread = socketio.start_background_task(background_thread,msg['data'])
+
+def background_thread(room):
+#     eventlet.spawn_n(gtask_socketio_emit)
+
+# def gtask_socketio_emit():
+       
+    while (True):
+        with thread_lock:
+            if(sessions_client.get(room)!=None):
+                socketio.emit('server_response', {'data': sessions_client[room]},namespace='/test_conn',room=room) 
+                # sessions_client[room]=[]
+        # conns[:]=[]
+        eventlet.sleep(0.75)
+            # count=count+1
+
+ ############为每一个客户端分配一个房间##############
+@socketio.on('join', namespace='/test_conn')
+def join(message):
+    room=message['data']
+    join_room(room)
+    # print room
+    emit('join_response',{'data':'join room!'})
+  # ############################################### 
 
 @app.route('/register',methods=['GET','POST'])
 def register():
@@ -87,6 +130,7 @@ def register():
 # 用户第一次请求需要的所有数据
 @app.route('/reqAuth',methods=['GET','POST'])
 def getReqAuthData():
+
     timestamp = int(time.time())
     # 32
     #Ru = random.randint(10000000000000000000000000000000, 99999999999999999999999999999999)
@@ -124,7 +168,7 @@ def getReqAuthData():
     )
 
 # 用户向卫星发起第一次请求
-def reqAuth():
+def reqAuth(room):
     #print datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
     url = "http://127.0.0.1:2333/reqAuth"
     # proxies = {'http': 'http://192.0.2.30:8080'}
@@ -132,7 +176,7 @@ def reqAuth():
     data = getReqAuthData()
     # m_lock.release()
     # qi 第一次认证数据 110 行数据 延时和2秒
-    # clear_and_add(data)
+    clear_and_add(data,room)
     # 真正计算开始时间
     # m_lock.acquire()
     startTime = int(round(time.time() * 1000))
@@ -152,14 +196,15 @@ def reqAuth():
     
     to = json.dumps(data)
     # qi卫星返回给用户数据 真正延时和 10+2 S 认证延时6+2 （时间戳以及计算完毕了，不会随睡眠时间增加了.而且返回前数据以及打印出来了，所以显示比运行少2秒）
-    # clear_and_add(to)
+    clear_and_add(to,room)
+    del_dsessions_client(room)
     if data['ReqAuth'] == "500":
         global num
         num+=1
         print "failed total...",num
         # m_lock.release()
-        # return "0"
-        return
+        return "0"
+        # return
     else:
         
         secretHsat = data["secretHsat"]
@@ -178,8 +223,8 @@ def reqAuth():
         if MAC != myMAC:
             print "failed..."
             # m_lock.release()
-            # return "0"
-            return
+            return "0"
+            # return
 
         # 解开 secretHsat secretSessionId
         with open("userInfo.json", "r") as userInfo:
@@ -200,31 +245,46 @@ def reqAuth():
              "sessionMACKey":sessionMACKey,
              "time": int(time.time())
         }
+        # session为flask内置模块，
+        #和用户ID绑定，用于去除sessionId，用于二次验证
+        session[IDu] = sessionId
         add_session(sessionId, sessions)
 
         # print sessionId, sessionKey, sessionMACKey
         # qi
         # print "auth success..."
         # m_lock.release()
-        # return "1"
-        return
+        return "1"
+        # return
 
 # 用户二次认证请求需要的所有数据
 @app.route('/userAuthtwice',methods=['GET','POST'])
 def getReqAuthtwiceData():
+    room= request.args.get("data")
     sessions = get_sessions()
-    print sessions
+    # print sessions
     # 奇：个人认为有点问题
-    sessionId = sessions.keys()[0]
-    sessionKey = sessions[sessionId]['sessionKey']
-    MACKey = sessions[sessionId]['sessionMACKey']
-    timestamp = int(time.time())
-    Ru = getRandom()
+    # sessionId = sessions.keys()[0]
+    # sessionKey = sessions[sessionId]['sessionKey']
+    # MACKey = sessions[sessionId]['sessionMACKey']
+    # timestamp = int(time.time())
+    # Ru = getRandom()
     # 读取用户信息
     with open("userInfo.json", "r") as userInfo:
         userInfo = json.load(userInfo)
     Ku = userInfo["userKey"]
     Ku_use = Ku
+    IDu=userInfo["userId"]
+    # 从flak内置session取出IDu
+    sessionId=session.get(IDu)
+    if(sessionId==None):
+        print "用户信息不合法，请先进行第一次认证"
+        return 0
+    # sessionId = sessions.keys()[0]
+    sessionKey = sessions[sessionId]['sessionKey']
+    MACKey = sessions[sessionId]['sessionMACKey']
+    timestamp = int(time.time())
+    Ru = getRandom()
     encode_data = encryptData(userInfo["userId"] + sessionKey + MACKey, Ku_use)
     # MAC_key=h(K||IDu||Ru’)
     MAC_key = getHash(userInfo["userKey"] + userInfo["userId"]  + str(Ru))
@@ -239,11 +299,11 @@ def getReqAuthtwiceData():
             "encode_data":encode_data,
             "MAC":MAC
         })
-    return reqAuthtwice(data,Ru,sessionKey,MACKey)
+    return reqAuthtwice(data,Ru,sessionKey,MACKey,room)
 
 # 用户向卫星发起二次认证请求
-def reqAuthtwice(data,Ru,sessionKey,MACKey):
-    clear_and_add(data)
+def reqAuthtwice(data,Ru,sessionKey,MACKey,room):
+    clear_and_add(data,room)
     startTime = int(time.time()*1000)
     # qi   用户准备好第二次认证数据，发起第二次认证 真正多余延时和 2 S  多余认证延时0
     # sessionId=data["sessionId"]
@@ -260,7 +320,7 @@ def reqAuthtwice(data,Ru,sessionKey,MACKey):
     #print datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
     data =  json.loads(resp.content)
     data['authtime'] = authtime
-    print data
+    # print data
     to = json.dumps(data)
 
     Rs = data["Rs"]
@@ -290,8 +350,8 @@ def reqAuthtwice(data,Ru,sessionKey,MACKey):
 
     # 生成会话密钥 sessionKey sessionMACKey
     sessionKey = getHash(Ku + str(Ru) + Rs + sessionKey)
-    sessionMACKey = getHash(IDu + str(Ru) + MACKey)
-    # qi 项目报告上面这样写的，个人感觉有点奇怪。可能为下面这种情况。
+    sessionMACKey = getHash(IDu + Ku+ str(Ru) + MACKey)
+    # qi 项目报告上面这样写的，个人感觉有点奇怪。可能为下面这种情况 //已经
     # sessionMACKey = getHash(IDu + str(Ru) + Ku+ MACKey)
 
     sessions = {
@@ -302,21 +362,27 @@ def reqAuthtwice(data,Ru,sessionKey,MACKey):
          "time": int(time.time())
     }
     add_session(new_sessionId, sessions)
+    del_session
     # del_session(sessionId)
     # # qi卫星返回给用户数据 真正延时和 6+2 S  认证延时4（时间戳以及计算完了，不会随睡眠时间增加了.而且返回前数据以及打印出来了，所以显示比运行少2秒）
-    clear_and_add(to)
-    print new_sessionId, sessionKey, sessionMACKey
-    print "auth success..."
+    clear_and_add(to,room)
+    session[IDu] == new_sessionId
+    # print session[IDu]
+    # print new_sessionId, sessionKey, sessionMACKey
+    # print "auth success..."
     return "1"
 
 @app.route('/reqwebbrowser',methods=['GET','POST'])
 def webbrowseraccess():
     url = "http://127.0.0.1:2333/success"
-    sessions = get_sessions()
-    print 
-    sessions
+    with open("userInfo.json", "r") as userInfo:
+        userInfo = json.load(userInfo)
+    IDu=userInfo["userId"]
+    # 从flak内置session取出IDu
+    # print 
+    # sessions
     try:
-        sessionId = sessions.keys()[0]
+        sessionId = session[IDu]
         data = json.dumps({
             "sessionId": str(sessionId)
         })
@@ -337,10 +403,12 @@ def webbrowseraccess():
 def datatransport():
     request_data = json.loads(request.data)
     url = "http://127.0.0.1:2333/reqImg"
-    sessions = get_sessions()
+    with open("userInfo.json", "r") as userInfo:
+        userInfo = json.load(userInfo)
+    IDu=userInfo["userId"]
     # print sessions
     try:
-        sessionId = sessions.keys()[0]
+        sessionId = session[IDu]
         data = json.dumps({
             "sessionId": str(sessionId),
             "imgId": request_data['imgId'],
@@ -352,16 +420,20 @@ def datatransport():
             return "2"
 
         #return resp.text
-        print resp.text
+        # print resp.text
         imgData = json.loads(resp.text)
         try:
             content = imgData['content']
+            print("1")
             sessionId = imgData['sessionId']
+            print("2")
             MAC = imgData['MAC']
+            print("3")
             img_key = imgData['img_key']
+            # print("4")
 
             # 读取sessions
-            data = json.loads(authResult())
+            data = authResult(sessionId)
 
             mySessionId = data['sessionId']
             MACKey = bytes(data['MACKey'])
@@ -390,6 +462,7 @@ def datatransport():
             return "0"
         except Exception, e:
            print e
+           print "aaaaaa"
            return "0"
     except Exception, e:
        print e
@@ -397,13 +470,13 @@ def datatransport():
        return "0"
 
 def authResult(sessionId):
-    sessions = get_sessions()
+    # sessions = get_sessions()
     return {
         "sessionId":sessionId,
         "sessionKey":sessions[sessionId]["sessionKey"],
         "MACKey":sessions[sessionId]["sessionMACKey"],
-        "IDu":sessions[sessionId]["IDu"],
-        "Ku":sessions[sessionId]["Ku"],
+        # "IDu":sessions[sessionId]["IDu"],
+        # "Ku":sessions[sessionId]["Ku"],
     }
 # 处理options['Len_Ru']
 def getRandom():
@@ -456,19 +529,23 @@ def decryptData(data, key):
         return three_des_decrypt(data, key)
 #.........................................................................................................................................#
 
-# 认证结果展示
-def authResult():
-   sessionId = sessions.keys()[0]
-   return json.dumps({
-       "sessionId":sessionId,
-       "sessionKey":sessions[sessionId]["sessionKey"],
-       "MACKey":sessions[sessionId]["sessionMACKey"]
-   })
+# # 认证结果展示
+# def authResult():
+#    sessionId = sessions.keys()[0]
+#    return json.dumps({
+#        "sessionId":sessionId,
+#        "sessionKey":sessions[sessionId]["sessionKey"],
+#        "MACKey":sessions[sessionId]["sessionMACKey"]
+#    })
 
 @app.route('/userAuth', methods=['GET','POST'])
 @cross_origin()
 def userAuth():
-    status = reqAuth()
+    # if(request.data):
+    # print  request.args.get("data")
+    room= request.args.get("data")
+        # sessions_client[msg[data]] = room
+    status = reqAuth(room)
     return status
 
 # @app.route('/userAuthtwice', methods=['GET','POST'])
@@ -488,14 +565,14 @@ class myThread (threading.Thread):   #继承父类threading.Thread
 
 if __name__ == '__main__':
     # reqAuth()
-###############测试并发线程性能##############
-    for i in range(1000):
-        for i in range(100):
-            cur=ReqAuth()
-            cur.start()
-        # for i in range(20):
-            cur.join()
-            time.sleep(0.025)
+# ###############测试并发线程性能##############
+#     for i in range(1000):
+#         for i in range(100):
+#             cur=ReqAuth()
+#             cur.start()
+#         # for i in range(20):
+#             cur.join()
+#             time.sleep(0.025)
         # time.sleep(1)
 ###########################################
 
@@ -525,14 +602,14 @@ if __name__ == '__main__':
 
     # for i in range(10):
     #     reqAuth()
-    # socketio.run(
-    #         app,
-    #         host='0.0.0.0',#任何ip都可以访问
-    #         # host='::',
-    #         port=8888,#端口
-    #         # debug=True
+    socketio.run(
+            app,
+            host='0.0.0.0',#任何ip都可以访问
+            # host='::',
+            port=8888,#端口
+            debug=True
             
-    #         )
+            )
     # while 1:
     #    reqAuth()
     #    time.sleep(3)

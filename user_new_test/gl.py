@@ -2,9 +2,15 @@
 # -*- coding:utf-8 -*-
 # author : b1ng0
 import time
-num=0
-sessions = {}
-conns = []
+from threading import RLock
+import collections
+thread_lock = RLock()
+# room=0
+sessions= collections.OrderedDict()
+sessions_client = collections.OrderedDict()
+sessions={}
+sessions_client={}
+# conns = []
 options = {
     'Hash_option': 2,
     'Key_option': 1,
@@ -13,11 +19,15 @@ options = {
 }
 
 # 处理全局变量conns
-def clear_and_add(data):
-    if len(conns) != 0:
-        del conns[0]
-    conns.append(data)
-    time.sleep(0.75)
+def clear_and_add(data,room):
+    with thread_lock:
+    # if len(conns) != 0:
+    #     del conns[0]
+    # conns.append(data)
+        conns = []
+        conns.append(data)
+        sessions_client[room]=conns
+    time.sleep(1)
 
 # 处理全局变量sessions
 def add_session(key, value):
@@ -30,6 +40,9 @@ def del_session(key):
     if sessions.has_key(key):
         sessions.pop(key)
         
+def del_dsessions_client (key):
+      if sessions_client.has_key(key):
+        sessions_client.pop(key)     
 # 处理全局变量options
 def get_options():
     return options

@@ -250,7 +250,7 @@ def authResult(sessionId):
     }
 
 # 向用户加密传输图片
-def imgRepo(data, img_content):
+def imgRepo(data, img_content, img_key, img_id):
 
     sessionId = data['sessionId']
     sessionKey = data['sessionKey']
@@ -258,7 +258,7 @@ def imgRepo(data, img_content):
 
     # key_use = bytes(sessionKey.decode('hex'))
     content = encryptData(img_content, sessionKey)
-
+    img_key = encryptData(img_key, sessionKey)
     MAC = getHmac(MACKey, content)
 
     # 传递给用户
@@ -268,6 +268,7 @@ def imgRepo(data, img_content):
         "sessionId": sessionId,
         "IDu": data['IDu'],
         "content":"img content",
+        "imgId": img_id,
         "MAC":str(MAC)
     })
     clear_and_add(conns_data)
@@ -275,10 +276,41 @@ def imgRepo(data, img_content):
         "ReqAuth": "rspImg",
         "sessionId":sessionId,
         "content":content,
+        "img_key":img_key,
         "MAC":str(MAC)
     })
 
     return data
+    
+# def imgRepo(data, img_content):
+
+#     sessionId = data['sessionId']
+#     sessionKey = data['sessionKey']
+#     MACKey = bytes(data['MACKey'])
+
+#     # key_use = bytes(sessionKey.decode('hex'))
+#     content = encryptData(img_content, sessionKey)
+
+#     MAC = getHmac(MACKey, content)
+
+#     # 传递给用户
+#     # url = "http://" + user_ip + ":8888/reqImg"
+#     conns_data = json.dumps({
+#         "ReqAuth": "rspImg",
+#         "sessionId": sessionId,
+#         "IDu": data['IDu'],
+#         "content":"img content",
+#         "MAC":str(MAC)
+#     })
+#     clear_and_add(conns_data)
+#     data = json.dumps({
+#         "ReqAuth": "rspImg",
+#         "sessionId":sessionId,
+#         "content":content,
+#         "MAC":str(MAC)
+#     })
+
+#     return data
 
 # 处理二次认证
 def dealSecondAuth(data):

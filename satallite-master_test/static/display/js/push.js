@@ -13,14 +13,14 @@ $(document).ready(function () {
     var socket = io.connect('ws://127.0.0.1:2333/test_conn');
     var tmp = '';
     var table = [];     
-    var num=0;  
-    var data_len=0;
+    var log_num=0;  
+    var test_data_len=0;
     // console.log(1)                            
     socket.on('server_response', function (msg) {
         //  console.log(msg.data);
         if (msg.data.length != 0){
-            data_len+=msg.data.length;
-            console.log(data_len);
+            test_data_len+=msg.data.length;
+            console.log(test_data_len);
             // len+=msg.data.length;
             // console.log(len)
             // localStorage.setItem("len",len.toString());
@@ -93,11 +93,11 @@ $(document).ready(function () {
             //    if( $('#log').val.length=0) { $('#log').append('<br>' + $('<div/>').text('\n# ' + time + ' ---------- 用户认证成功：\n' + tmp).html());}
                $('#log').prepend('<br>' + $('<div/>').text('\n# ' + time + ' ---------- 用户认证成功：\n' + tmp).html());
 
-                num++;
+                log_num++;
                 // console.log(num)
-                if (num>500) {
+                if (log_num>500) {
                       $("#log").empty() ; 
-                      num=0;  
+                      log_num=0;  
                     // document.getElementById("log").value="";     
                 }
                
@@ -130,11 +130,11 @@ $(document).ready(function () {
                 // simple1.innerHTML = "<h3>" + time + "</h3><br>用户:<h3>" + user + "</h3><font color='#FF0000'>认证失败</font>";
                 // simpleResult1.innerHTML = "</h6>";
                 $('#log').prepend('<br>' + $('<div/>').text('\n # ' + time + ' ---------- 用户认证失败：\n' + tmp).html());
-                num++;
+                log_num++;
                 // console.log(num)
-                if (num>500) {
+                if (log_num>500) {
                       $("#log").empty()  ;  
-                      num=0; 
+                      log_num=0; 
                     // document.getElementById("log").value="";     
                 }
                 var status = '认证失败';

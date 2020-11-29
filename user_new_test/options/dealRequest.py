@@ -104,7 +104,6 @@ def dealResNcc(auth_reps, Rs, Ru, PIDu):
         data = {
             "ReqAuth":"500",
             "PIDu":PIDu
-            }
         return data
 
 # 处理卫星第二次返回的信息：Esk{IDu，Ku}、MAC、TNCC，并返回给用户

@@ -7,7 +7,6 @@ from flask_socketio import SocketIO, emit
 from flask_cors import CORS
 import json
 import webbrowser
-import copy
 # import queue
 
 from threading import RLock
@@ -17,9 +16,7 @@ from threading import RLock
 
 from dealRequest import *
 from gl import *
-# m_lock = threading.Lock()
-eventlet.monkey_patch()
-# data_temp=[]
+from imgCompress import imgCompress
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 CORS(app, supports_credentials=True)
@@ -110,12 +107,19 @@ def gtask_socketio_emit():
     #         conns[:]=[]
     #         eventlet.sleep(0.1)
 
+ 
 
 # 用户请求卫星图片
 @app.route('/reqImg', methods=['GET', 'POST'])
 def reqImg():
     if(request.data):
-        sessionId = json.loads(request.data)["sessionId"]
+        request_data = json.loads(request.data)
+        sessionId = request_data["sessionId"]
+
+        imgId = request_data["imgId"] # 图片1/2/3
+        ratioId = request_data['ratioId'] # 分辨率 1/2/3 低/中/高
+
+
         sessions = get_sessions()
         try:
             session_data = sessions[sessionId]
@@ -128,19 +132,26 @@ def reqImg():
             userData = json.dumps({
                 'IDu': IDu,
                 'sessionId': sessionId,
-                'ReqAuth': 'reqImg'
+                'ReqAuth': 'reqImg',
+                'ratioId': ratioId,
+                'imgId': imgId
             })
             clear_and_add(userData)
         except KeyError:
             return 'you not auth success', 500
-        
-        with open("static/img/sate.png", "rb") as img:
+         # encode img
+        if imgCompress.img_encode(imgId,ratioId) == 1:
+            return 'img encode error', 500
+        # part.j2k lena.key ==> user
+        with open("imgCompress/transcoding/transcoding/Client/part.j2k", "rb") as img:
             img_content = img.read()
+        with open("imgCompress/transcoding/transcoding/Client/lena.key", "rb") as key:
+            img_key = key.read()
         # 对图像信息进行加密
-        if img_content:
+        if img_content and img_key:
             try:
                 data = authResult(sessionId)
-                return imgRepo(data, img_content)
+                return imgRepo(data, img_content,img_key, imgId)
             except Exception, e:
                 print e
                 imgError = json.dumps({
@@ -152,6 +163,46 @@ def reqImg():
                 return "img crypty error", 500
 
     return "method error", 500
+# @app.route('/reqImg', methods=['GET', 'POST'])
+# def reqImg():
+#     if(request.data):
+#         sessionId = json.loads(request.data)["sessionId"]
+#         sessions = get_sessions()
+#         try:
+#             session_data = sessions[sessionId]
+#             # 判断session是否过期
+#             now = int(time.time())
+#             if now-session_data['time'] > 60*30:
+#                 return "expire", 401
+
+#             IDu = session_data['IDu']
+#             userData = json.dumps({
+#                 'IDu': IDu,
+#                 'sessionId': sessionId,
+#                 'ReqAuth': 'reqImg'
+#             })
+#             clear_and_add(userData)
+#         except KeyError:
+#             return 'you not auth success', 500
+        
+#         with open("static/img/sate.png", "rb") as img:
+#             img_content = img.read()
+#         # 对图像信息进行加密
+#         if img_content:
+#             try:
+#                 data = authResult(sessionId)
+#                 return imgRepo(data, img_content)
+#             except Exception, e:
+#                 print e
+#                 imgError = json.dumps({
+#                     'error': e,
+#                     'ReqAuth': 'imgError',
+#                     'IDu': IDu
+#                 })
+#                 clear_and_add(imgError)
+#                 return "img crypty error", 500
+
+#     return "method error", 500
 
 # 认证成功访问页面
 @app.route('/success', methods=['GET', 'POST'])

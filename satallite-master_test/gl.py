@@ -11,7 +11,7 @@ import sys
 from Queue import Queue
 from flask.globals import g
 from pympler import asizeof
-socketio_msg_queue = Queue(maxsize=50000)
+# socketio_msg_queue = Queue(maxsize=50000)
 # m_lock = threading.Lock()
 # 设置ip地址
 ncc_ip = '127.0.0.1'
@@ -41,7 +41,7 @@ succ_user = 0
 storage=0
 num=0
 # 处理全局变量conns
-def clear_and_add(data):
+def  clear_and_add(data):
     if len(conns) != 0:
         del conns[0]
     conns.append(data)
