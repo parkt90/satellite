@@ -184,7 +184,7 @@ $(document).ready(function () {
                  user2sata();
             }
             // 返回二次认证成功
-            else if (obj.ResAuth == 'rspSecondAuth') {
+            else if (obj.RepAuth == 'rspSecondAuth') {
                 var user = obj.IDu.substring(0, 5) + "****";
                 simple1.innerHTML = "<h3>" + time + "</h3><br>用户:<h3>" + user + "</h3><font color='#FF0000'>二次认证成功</font>";
                 simpleResult1.innerHTML = "</h6>";

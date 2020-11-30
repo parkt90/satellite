@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-import eventlet
-eventlet.monkey_patch()
-from time import sleep
+# import eventlet
+# eventlet.monkey_patch()
+from time import sleep, time as _time
 from flask import Flask, jsonify, request, render_template, send_from_directory,session
 from flask_socketio import SocketIO, emit,join_room, leave_room,close_room, rooms
 from flask_cors import *
@@ -21,16 +21,21 @@ from crypty_helper.DES_use import *
 from crypty_helper.DES_3_use import *
 from gl import *
 from imgCompress import imgCompress
+# threading 模块时间获取BUG修复
+
+
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret-password!'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
-CORS(app, supports_credentials=True)
+CORS(app, supports_credentials=True,)
 # m_lock = threading.Lock()
 # socketio = SocketIO(app)
 
 thread = None
-socketio = SocketIO(app)
+# socketio = SocketIO(app)
+socketio = SocketIO(app,async_mode='threading')
 
 # #####################多线程并发设置#######################
 # maxs=20  ##并发的线程数量
@@ -168,7 +173,7 @@ def getReqAuthData():
     )
 
 # 用户向卫星发起第一次请求
-def reqAuth(room):
+def reqAuth():
     #print datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
     url = "http://127.0.0.1:2333/reqAuth"
     # proxies = {'http': 'http://192.0.2.30:8080'}
@@ -176,35 +181,34 @@ def reqAuth(room):
     data = getReqAuthData()
     # m_lock.release()
     # qi 第一次认证数据 110 行数据 延时和2秒
-    clear_and_add(data,room)
+    # clear_and_add(data,room)
     # 真正计算开始时间
-    # m_lock.acquire()
     startTime = int(round(time.time() * 1000))
-    # m_lock.release()
     resp = requests.post(url, data=data)
     # m_lock.acquire()
     endtime =  int(round(time.time() * 1000))
     authtime = endtime - startTime
-    temp_time=authtime
-    with open("time.txt", "a+") as f:
-        f.write(str(temp_time)+'\n')
+
+    #导出认证时间数据 用于仿真
+    # temp_time=authtime
+    # with open("time.txt", "a+") as f:
+    #     f.write(str(temp_time)+'\n')
     #print datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
-    # m_lock.acquire()
     ru = json.loads(data)["Ru"]
     data = json.loads(resp.content)
     data['authtime'] = authtime
     
     to = json.dumps(data)
     # qi卫星返回给用户数据 真正延时和 10+2 S 认证延时6+2 （时间戳以及计算完毕了，不会随睡眠时间增加了.而且返回前数据以及打印出来了，所以显示比运行少2秒）
-    clear_and_add(to,room)
-    del_dsessions_client(room)
+    # clear_and_add(to,room)
+    # del_dsessions_client(room)
     if data['ReqAuth'] == "500":
         global num
         num+=1
         print "failed total...",num
         # m_lock.release()
-        return "0"
-        # return
+        # return "0"
+        return
     else:
         
         secretHsat = data["secretHsat"]
@@ -223,8 +227,8 @@ def reqAuth(room):
         if MAC != myMAC:
             print "failed..."
             # m_lock.release()
-            return "0"
-            # return
+            # return "0"
+            return
 
         # 解开 secretHsat secretSessionId
         with open("userInfo.json", "r") as userInfo:
@@ -247,15 +251,16 @@ def reqAuth(room):
         }
         # session为flask内置模块，
         #和用户ID绑定，用于去除sessionId，用于二次验证
-        session[IDu] = sessionId
+        # 性能测试时务必注释到。后台模拟用户认证，如果使用到session模块的话，需要request上下文。真实客户端认证时，是具备的。
+        # session[IDu] = sessionId
         add_session(sessionId, sessions)
 
         # print sessionId, sessionKey, sessionMACKey
         # qi
         # print "auth success..."
         # m_lock.release()
-        return "1"
-        # return
+        # return "1"
+        return
 
 # 用户二次认证请求需要的所有数据
 @app.route('/userAuthtwice',methods=['GET','POST'])
@@ -557,59 +562,58 @@ def userAuth():
 class myThread (threading.Thread):   #继承父类threading.Thread
     def __init__(self):
         threading.Thread.__init__(self)
-    def run(self):                   #把要执行的代码写到run函数里面 线程在创建后会直接运行run函数 
+    def run(self):                  #把要执行的代码写到run函数里面 线程在创建后会直接运行run函数 
         try:
             reqAuth()
         except:
             print "Error: unable to start thread"
+        
 
 if __name__ == '__main__':
     # reqAuth()
 # ###############测试并发线程性能##############
-#     for i in range(1000):
-#         for i in range(100):
-#             cur=ReqAuth()
-#             cur.start()
-#         # for i in range(20):
-#             cur.join()
-#             time.sleep(0.025)
+    # for i in range(1000):
+    #     for i in range(100):
+    #         cur=ReqAuth()
+    #         cur.start()
+    #     # for i in range(20):
+    #         cur.join()
+    #         time.sleep(0.025)
         # time.sleep(1)
 ###########################################
 
 ###############普通测试##############
-    # for i in range(2000):
+    # for i in range(100000):
     #     reqAuth()
-    #     time.sleep(0.1)
+    #     time.sleep(0.005)
         
 ###########################################
 
+###############普通多线程测试##############
+    for i in range(400):
+        for i in range(25):
+            cur=myThread()
+            cur.start()
+            cur.join()
+           
 
-
-###############多线程测试##############
-    # for i in range(80):
-    #     for i in range(25):
-    #         cur=myThread()
-    #         cur.start()
-    #         cur.join()
-    #     time.sleep(1)
-# ###########################################
-    # my_pool = Pool(processes=10)
-    # for i in range(50):
-    #     my_pool.apply(reqAuth,args = (i, ))
+################线程池，多线程性能测试##########################
+    # my_pool = Pool(processes=50)
+    # for i in range(10000):
+    #     my_pool.apply(reqAuth)
     # my_pool.close()
     # my_pool.join() 
-    # time.sleep(1)
-
+##############################################
     # for i in range(10):
     #     reqAuth()
-    socketio.run(
-            app,
-            host='0.0.0.0',#任何ip都可以访问
-            # host='::',
-            port=8888,#端口
-            debug=True
+    # socketio.run(
+    #         app,
+    #         host='0.0.0.0',#任何ip都可以访问
+    #         # host='::',
+    #         port=8888,#端口
+    #         debug=True
             
-            )
+    #         )
     # while 1:
     #    reqAuth()
     #    time.sleep(3)

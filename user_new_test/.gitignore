@@ -44,3 +44,6 @@ venv
 .vscode/
 #temp vale
 userInfo.json
+.key
+.png
+.key

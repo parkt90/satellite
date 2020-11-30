@@ -29,7 +29,7 @@ def img_encode():
 # part.j2k lena.key -> lena.png
 def img_decode():
     if os.system(part2dec) == 0:
-        print j2k2png
+        # print j2k2png
         if os.system(j2k2png) == 0:
             return 0
     return 1

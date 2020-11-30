@@ -55,8 +55,8 @@ def change_options(new_options):
     options = new_options
 
 #对面图像进行解密
-def img_decode():
-    if os.system(part2dec) == 0:
-        if os.system(j2k2png) == 0:
-            return 0
-    return 1
+# def img_decode():
+#     if os.system(part2dec) == 0:
+#         if os.system(j2k2png) == 0:
+#             return 0
+#     return 1
