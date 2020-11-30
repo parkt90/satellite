@@ -25,8 +25,9 @@ thread_lock = RLock()
 thread = None
 
 # socketio = SocketIO(app)
-socketio = SocketIO(app)
-
+socketio = SocketIO(app,async_mode='eventlet')
+with open("log.txt", "r+") as f:
+            f.truncate()
 
 @app.route('/')
 def index():
@@ -320,7 +321,7 @@ def reqAuthFromUser():
                 "storage":get_sessions_storage(),
                 "PIDu":data['PIDu'],
                 "ReqAuth":data['ReqAuth'],
-                "authtime" : str(int(round(time.time() * 1000))-startTime)+"ms"
+                "认证时间" : str(int(round(time.time() * 1000))-startTime)+"ms"
 
             }
             change(str(temp_data1))
@@ -349,14 +350,13 @@ def reqAuthFromUser():
                 "conn_user": conn_user,
                 "succ_user": succ_user,
                 "storage" :get_sessions_storage(),
-                "authtime" : str(int(round(time.time() * 1000))-startTime)+"ms"
+                "认证时间" : str(int(round(time.time() * 1000))-startTime)+"ms"
             })
             # clear_and_add(data)
             change(str(data))
             t6 =threading.Thread(target=add)
             t6.start()
             t6.join()
-            add(data)
             # m_lock.release()
             # time.sleep(1)
             # m_lock.acquire()
@@ -395,7 +395,7 @@ if __name__ == "__main__":
     # CORS(app, supports_credentials=True)
     socketio.run(
         app,
-        # debug=True,
+        debug=True,
         host='127.0.0.1',
         port=2333,
 
