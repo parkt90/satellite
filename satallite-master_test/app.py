@@ -391,8 +391,6 @@ def getUserList():
 
 
 if __name__ == "__main__":
-    # webbrowser.open("http://127.0.0.1:2333")
-    # CORS(app, supports_credentials=True)
     socketio.run(
         app,
         debug=True,
